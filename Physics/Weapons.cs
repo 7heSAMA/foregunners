@@ -126,12 +126,7 @@ namespace Foregunners
             //Logic.Update();
         }
     }
-
-    public abstract class HullMount
-    {
-
-    }
-
+	
     public class TurretMount : Weapon
     {
         // turret aiming 

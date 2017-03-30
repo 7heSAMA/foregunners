@@ -14,44 +14,38 @@ namespace Foregunners
         Solid,
         Slope,
         Landing,
-        Diagonal,
     }
-
+	
     [Flags]
     public enum SeamStyle
     {
-        Lone = 0,
-        Earth = 1 << 0,         //1
-        Road = 1 << 1,          //2
-        Sty3 = 1 << 2,      //4
-        Sty4 = 1 << 3,    //8
-        Sty5 = 1 << 4,   //16
-        Sty6 = 1 << 5,    //32
-        Sty7 = 1 << 6,  //64
-        Sty8 = 1 << 7,   //128
-
+        None = 0,
+        Flat = 1 << 0,	//1
+        Slope = 1 << 1,	//2
+        Sty3 = 1 << 2,	//4
+        Sty4 = 1 << 3,	//8
+        Sty5 = 1 << 4,	//16
+        Sty6 = 1 << 5,	//32
+        Sty7 = 1 << 6,	//64
+        Sty8 = 1 << 7,	//128
     }
 
     [Flags]
     public enum Neighbors
     {
         None = 0,
-        TopLeft = 1 << 0,       //1
-        TopCenter = 1 << 1,     //2
-        TopRight = 1 << 2,      //4
-        CenterLeft = 1 << 3,    //8
-        CenterRight = 1 << 4,   //16
-        BottomLeft = 1 << 5,    //32
-        BottomCenter = 1 << 6,  //64
-        BottomRight = 1 << 7,   //128
+        TopLeft = 1 << 0,		//1
+        TopCenter = 1 << 1,		//2
+        TopRight = 1 << 2,		//4
+        CenterLeft = 1 << 3,	//8
+        CenterRight = 1 << 4,	//16
+        BottomLeft = 1 << 5,	//32
+        BottomCenter = 1 << 6,	//64
+        BottomRight = 1 << 7,	//128
     }
 
     public class Subtile
     {
-        // CornerTopLeft, CornerTopRight, CornerBotRight, CornerBotLeft
-        // StraightTop, StraightRight, StraightBot, StraightLeft
-        // InsideTopLeft, InsideTopRight, InsideBotRight, InsideBotLeft
-        
         public Rectangle Source { get; protected set; }
         public SpriteEffects Fx { get; protected set; }
         public float Rotation { get; protected set; }
@@ -88,12 +82,7 @@ namespace Foregunners
             Vector3 min = new Vector3(x * FOOT, y * FOOT, z * DEPTH);
             return new BoundingBox(min, min + Dimensions);
         }
-
-        public bool[,,] Vertices { get; protected set; } = new bool[2, 2, 2] {
-                { { false, false }, {false, false } },
-                { { false, false }, {false, false } }
-            };
-
+		
         public Vector3 Position { get; protected set; }
         #endregion
 
@@ -119,7 +108,6 @@ namespace Foregunners
             Style = style;
             Collision = coll;
             Fill = fill;
-            //Sprites = new Subtile[4, 4, 4];
         }
 
         public void LoadContextualSource(Neighbors hood)
@@ -132,86 +120,69 @@ namespace Foregunners
             Rectangle outside = new Rectangle(quarter, 0, quarter, quarter);
             Rectangle straight = new Rectangle(quarter * 2, 0, quarter, quarter);
             Rectangle inside = new Rectangle(quarter * 3, 0, quarter, quarter);
+			
+            //Console.WriteLine(hood);
 
-            Console.WriteLine(hood);
-
+			// Make the four edge subtiles straight sprites if no like tile above 
             if ((hood & Neighbors.TopCenter) != Neighbors.TopCenter)
             {
                 for (int i = 0; i < Sprites.GetLength(0); i++)
-                {
-                    Rectangle sauce = straight;
-                    Sprites[i, 0, 0] = new Subtile(sauce, 0.0f);
-                }
+                    Sprites[i, 0, 0] = new Subtile(straight, 0.0f);
             }
             if ((hood & Neighbors.BottomCenter) != Neighbors.BottomCenter)
             {
                 for (int i = 0; i < Sprites.GetLength(0); i++)
-                {
-                    Rectangle sauce = straight;
-                    Sprites[i, Sprites.GetLength(1) - 1, 0] = new Subtile(sauce, MathHelper.Pi);
-                }
+                    Sprites[i, Sprites.GetLength(1) - 1, 0] = new Subtile(straight, MathHelper.Pi);
             }
             if ((hood & Neighbors.CenterLeft) != Neighbors.CenterLeft)
             {
                 for (int i = 0; i < Sprites.GetLength(1); i++)
-                {
-                    Rectangle sauce = straight;
-                    Sprites[0, i, 0] = new Subtile(sauce, -MathHelper.Pi / 2.0f);
-                }
+                    Sprites[0, i, 0] = new Subtile(straight, -MathHelper.Pi / 2.0f);
             }
             if ((hood & Neighbors.CenterRight) != Neighbors.CenterRight)
             {
                 for (int i = 0; i < Sprites.GetLength(1); i++)
-                {
-                    Rectangle sauce = straight;
-                    Sprites[Sprites.GetLength(0) - 1, i, 0] = new Subtile(sauce, MathHelper.Pi / 2.0f);
-                }
+                    Sprites[Sprites.GetLength(0) - 1, i, 0] = new Subtile(straight, MathHelper.Pi / 2.0f);
             }
-            
-            if ((hood & (Neighbors.TopCenter | Neighbors.CenterRight)) == (Neighbors.TopCenter | Neighbors.CenterRight) &&
+
+			// Make corner subtiles inside corners if adjacent tiles alike, but diagonal not
+			if ((hood & (Neighbors.TopCenter | Neighbors.CenterRight)) == (Neighbors.TopCenter | Neighbors.CenterRight) &&
                 (hood & Neighbors.TopRight) == Neighbors.None)
             {
-                Rectangle sauce = inside;
-                Sprites[Sprites.GetLength(0) - 1, 0, 0] = new Subtile(sauce, 0.0f);
+                Sprites[Sprites.GetLength(0) - 1, 0, 0] = new Subtile(inside, 0.0f);
             }
             if ((hood & (Neighbors.BottomCenter | Neighbors.CenterRight)) == (Neighbors.BottomCenter | Neighbors.CenterRight) &&
                 (hood & Neighbors.BottomRight) == Neighbors.None)
             {
-                Rectangle sauce = inside;
-                Sprites[Sprites.GetLength(0) - 1, Sprites.GetLength(1) - 1, 0] = new Subtile(sauce, MathHelper.Pi / 2.0f);
+                Sprites[Sprites.GetLength(0) - 1, Sprites.GetLength(1) - 1, 0] = new Subtile(inside, MathHelper.Pi / 2.0f);
             }
             if ((hood & (Neighbors.BottomCenter | Neighbors.CenterLeft)) == (Neighbors.BottomCenter | Neighbors.CenterLeft) &&
                 (hood & Neighbors.BottomLeft) == Neighbors.None)
             {
-                Rectangle sauce = inside;
-                Sprites[0, Sprites.GetLength(1) - 1, 0] = new Subtile(sauce, MathHelper.Pi);
+                Sprites[0, Sprites.GetLength(1) - 1, 0] = new Subtile(inside, MathHelper.Pi);
             }
             if ((hood & (Neighbors.TopCenter | Neighbors.CenterLeft)) == (Neighbors.TopCenter | Neighbors.CenterLeft) &&
                 (hood & Neighbors.TopLeft) == Neighbors.None)
             {
-                Rectangle sauce = inside;
-                Sprites[0, 0, 0] = new Subtile(sauce, -MathHelper.Pi / 2.0f);
+                Sprites[0, 0, 0] = new Subtile(inside, -MathHelper.Pi / 2.0f);
             }
 
+			// Make corner subtiles outside corners if like-tiles adjacent on opposite sides
             if ((hood & (Neighbors.TopCenter | Neighbors.CenterRight)) == Neighbors.None)
             {
-                Rectangle sauce = outside;
-                Sprites[Sprites.GetLength(0) - 1, 0, 0] = new Subtile(sauce, 0.0f);
+                Sprites[Sprites.GetLength(0) - 1, 0, 0] = new Subtile(outside, 0.0f);
             }
             if ((hood & (Neighbors.BottomCenter | Neighbors.CenterRight)) == Neighbors.None)
             {
-                Rectangle sauce = outside;
-                Sprites[Sprites.GetLength(0) - 1, Sprites.GetLength(1) - 1, 0] = new Subtile(sauce, MathHelper.Pi / 2.0f);
+                Sprites[Sprites.GetLength(0) - 1, Sprites.GetLength(1) - 1, 0] = new Subtile(outside, MathHelper.Pi / 2.0f);
             }
             if ((hood & (Neighbors.BottomCenter | Neighbors.CenterLeft)) == Neighbors.None)
             {
-                Rectangle sauce = outside;
-                Sprites[0, Sprites.GetLength(1) - 1, 0] = new Subtile(sauce, MathHelper.Pi);
+                Sprites[0, Sprites.GetLength(1) - 1, 0] = new Subtile(outside, MathHelper.Pi);
             }
             if ((hood & (Neighbors.TopCenter | Neighbors.CenterLeft)) == Neighbors.None)
             {
-                Rectangle sauce = outside;
-                Sprites[0, 0, 0] = new Subtile(sauce, -MathHelper.Pi / 2.0f);
+                Sprites[0, 0, 0] = new Subtile(outside, -MathHelper.Pi / 2.0f);
             }
 
             for (int subZ = 0; subZ < Sprites.GetLength(2); subZ++)
@@ -225,23 +196,24 @@ namespace Foregunners
                         }
                     }
 
-            Console.WriteLine("Smooth count " + smoothCount);
+            //Console.WriteLine("Smooth count " + smoothCount);
         }
 
         public Tile(TileCollision coll, Color fill)
         {
             Fill = fill;
             Collision = coll;
-            Vertices = new bool[2, 2, 2] {
-                { { false, false }, {false, false } },
-                { { false, false }, {false, false } }
-            };
 
             if (coll == TileCollision.Landing)
             {
-                Style = SeamStyle.Earth;
+                Style = SeamStyle.Flat | SeamStyle.Slope;
                 ImplementedSubtile = true;
             }
+			else if (coll == TileCollision.Solid)
+			{
+				Style = SeamStyle.Flat;
+				ImplementedSubtile = true;
+			}
         }
 
         public virtual void Draw(SpriteBatch batch, int x, int y, int z)
@@ -304,51 +276,6 @@ namespace Foregunners
         }
     }
 
-    public class Diagonal : Tile
-    {
-        private Point LongEdges;
-        private float Rotation;
-
-        public Diagonal(Color fill, Point longEdges)
-            : base(TileCollision.Diagonal, fill)
-        {
-            if ((longEdges.X != -1 && longEdges.X != 1) || 
-                (longEdges.Y != -1 && longEdges.Y != 1))
-                throw new NotSupportedException();
-
-            LongEdges = longEdges;
-
-            if (LongEdges.X == 1)
-            {
-                if (LongEdges.Y == 1)
-                    Rotation = 0.0f;
-                else
-                    Rotation = MathHelper.Pi / 2.0f;
-            }
-            else
-            {
-                if (LongEdges.Y == 1)
-                    Rotation = -MathHelper.Pi / 2.0f;
-                else
-                    Rotation = MathHelper.Pi;
-            }
-        }
-        
-        public override void Draw(SpriteBatch batch, int x, int y, int z)
-        {
-            Vector2 basePos = new Vector2(x * FOOT, y * FOOT) + Print / 2;
-            float scaler = z * DEPTH;
-            
-            for (int i = 0; i < DIVS; i++)
-            {
-                scaler += DEPTH / DIVS;
-                Registry.DrawTri(batch, basePos + Registry.Spin * scaler,
-                    Color.Lerp(Fill, Registry.Burn, Registry.Lerp(scaler)),
-                    Rotation, 1.0f, Registry.GetDepth(scaler), true);
-            }
-        }
-    }
-
     public class Slope : Tile
     {
         private Point Incline;
@@ -362,7 +289,7 @@ namespace Foregunners
 
             Center = basePos + Dimensions / 2;
             Incline = incline;
-            Style = SeamStyle.Earth;
+            Style = SeamStyle.Slope;
         }
 
         public float GetHeight(Vector3 pos)

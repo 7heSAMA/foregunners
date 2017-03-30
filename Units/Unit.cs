@@ -10,7 +10,15 @@ namespace Foregunners
 {
     public abstract class Unit : SimCube
     {
-        public string Name { get; protected set; }
+		public enum Tag
+		{
+			OSO,
+			JKL,
+			WSL,
+			LYNX,
+		}
+
+		public string Name { get; protected set; }
 
         public int Hull { get; protected set; }
         public int Armor { get; protected set; }

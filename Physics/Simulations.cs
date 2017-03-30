@@ -9,23 +9,6 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Foregunners
 {
-    public class BoundingCylinder 
-    {
-        public Vector3 Positon;
-        public float Radius;
-        public float Depth;
-
-        public Vector3 Bottom { get { return Positon; } }
-        public Vector3 Top { get { return Positon + new Vector3(Vector2.Zero, Depth); } }
-
-        public BoundingCylinder(Vector3 pos, float r, float depth)
-        {
-            Positon = pos;
-            Radius = r;
-            Depth = depth;
-        }
-    }
-
     public abstract class SimFrame : IVisible
     {
         #region fields
@@ -243,21 +226,6 @@ namespace Foregunners
     public abstract class SimBody : SimFrame
     {
         #region fields that should be implemented by a child class but can't rn 
-        /// <summary>
-        /// Returns a BoundingBox with Position as the center. 
-        /// </summary>
-        public BoundingCylinder Bounds
-        {
-            get
-            {
-                Vector3 pos = new Vector3(
-                    (float)Math.Floor(Position.X),
-                    (float)Math.Floor(Position.Y),
-                    (float)Math.Floor(Position.Z));
-                return new BoundingCylinder(pos, Radius, Depth);
-            }
-        }
-
         private int _depth;
         public int Depth
         {

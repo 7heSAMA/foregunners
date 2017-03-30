@@ -14,7 +14,9 @@ namespace Foregunners
         public abstract string Contents { get; }
         public bool Active { get; protected set; }
         public SpriteFont Font { get; protected set; }
-        public IScript OnClick;
+
+        // TODO: use this - make expanding/collapsing the box a script, and give other options 
+		//public IScript OnClick;
 
         public Vector2 Size
         { get { return Font.MeasureString(Pad(Contents)); } }
@@ -57,11 +59,7 @@ namespace Foregunners
             return " " + data + " ";
         }
     }
-
-    public class Container
-    {
-    }
-
+	
     public class ManualBox : TextBox
     {
         private string _contents;
@@ -192,7 +190,7 @@ namespace Foregunners
             if (Dropdown)
                 yPos -= BodySize.Y / 2;
 
-            ScreenPos = Bulb + new Vector2(GuiGrid.GRID, yPos);
+            ScreenPos = Bulb + new Vector2(32, yPos);
         }
 
         public void Draw(SpriteBatch batch)
@@ -221,7 +219,7 @@ namespace Foregunners
             }
 
             // draw lines 
-            Vector2 tagStart = Bulb + new Vector2(GuiGrid.GRID, 0.0f);
+            Vector2 tagStart = Bulb + new Vector2(32, 0.0f);
             if (Dropdown)
                 tagStart.Y -= BodySize.Y / 2;
 

@@ -8,7 +8,7 @@ using Microsoft.Xna.Framework.Input;
 
 namespace Foregunners
 {
-    public abstract class Cinema : BaScript
+    public abstract class Cinema : IScript
     {
         #region fields
         protected bool DoRot, DoPos, DoZoom;
@@ -86,7 +86,7 @@ namespace Foregunners
         #region actual scripting
         public abstract void Camerawork();
 
-        public override void Update()
+        public void Update()
         {
             Camerawork();
 
@@ -163,26 +163,7 @@ namespace Foregunners
                 (float)Registry.gameTime.TotalGameTime.TotalSeconds / 6f);
         }
     }
-
-    public class DrillCin : Cinema
-    {
-        public DrillCin()
-        {
-            DoZoom = true;
-            DoRot = true;
-            DoPos = true;
-        }
-
-        public override void Camerawork()
-        {
-            Zoom = 1.5f;
-            Perspective = MathHelper.Pi / 20.0f;
-            Rotation = MathHelper.Pi / 8.0f;
-            Position = new Vector2(Registry.Stage.Width,
-                Registry.Stage.Height - 3) * Tile.FOOT / 2;
-        }
-    }
-
+	
     public class GenericCin : Cinema
     {
         public GenericCin()
@@ -286,34 +267,6 @@ namespace Foregunners
                 Registry.Stage.Height * Tile.FOOT / 2);
             Rotation = (float)Math.Atan2(center.Y - followPos.Y, center.X - followPos.X);
             Rotation = -Rotation - (MathHelper.Pi / 2.0f);
-        }
-    }
-
-    public class TileHider : BaScript
-    {
-        private Unit Follow;
-        private Rectangle Area;
-        List<Tile> Hide;
-
-        public TileHider(List<Tile> hide, Unit follow, Rectangle area)
-        {
-            Active = true;
-            Follow = follow;
-            Hide = hide;
-            Area = area;
-        }
-
-        public override void Update()
-        {
-            bool set = false;
-            // trigger areas should be representable as XY areas or XYZ volumes 
-            // XY shapes should always intersect XYZ shapes on the z axis 
-            if (Area.Contains(new Point((int)Math.Floor(Follow.Position.X),
-                (int)Math.Floor(Follow.Position.Y))))
-                set = true;
-
-            foreach (Tile tile in Hide)
-                tile.Hidden = set;
         }
     }
 }

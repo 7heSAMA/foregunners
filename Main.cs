@@ -7,12 +7,15 @@ namespace Foregunners
     // NOTES 
     // Inversion of Control "Auto Wiring" system - worth looking into to 
     // reduce calldowns/dependency injection? 
-    // Implementations of interface properties can change the access on 
+    // Implementations of interface properties can change privacy on 
     // unspecified accessors! 
 
-    /// <summary>
-    /// This is the main type for your game.
-    /// </summary>
+	// TODO: 
+	// Merge AutoBox and ManualBox using MakeBox factory pattern 
+	// Remove/merge superfluous classes - partially complete 
+	// Reimplement binary map files 
+	// Update UI - consider starting with tooltip TODO, but there may be a better way 
+	
     public class Main : Game
     {
         private GraphicsDeviceManager Graphics;
@@ -54,12 +57,10 @@ namespace Foregunners
             Batch = new SpriteBatch(GraphicsDevice);
             Cam = new Camera2D(Graphics);
             
-            GameStateController.Push(new MenuState());
-
             Registry.LoadGameServices(GraphicsDevice, Content, Services);
             
             Registry.Stage = 
-                new TextMap("depot", Services);
+                new Level("depot", Services);
         }
 
         /// <summary>

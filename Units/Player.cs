@@ -68,7 +68,8 @@ namespace Foregunners
                     (float)Math.Cos(angle) * 1.5f,
                     (float)Math.Sin(angle) * 1.5f,
                     0.0f);
-                Facing = Gizmo.TurnToAngle(angle, Facing, Velocity.Length() * 0.01f);
+                Facing = Gizmo.TurnToAngle((float)Math.Atan2(Velocity.Y, Velocity.X), Facing, 
+					Velocity.Length() * 0.01f);
             }
             
             Vector3 target = Registry.MouseCast + new Vector3(0, 0, Depth / 2);

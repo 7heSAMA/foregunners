@@ -8,7 +8,7 @@ using Microsoft.Xna.Framework.Input;
 
 namespace Foregunners
 {
-    public class BasicWave : BaScript
+    public class BasicWave : IScript
     {
         public int Score = 0;
         public int NumEnemies = 3;
@@ -21,10 +21,9 @@ namespace Foregunners
         {
             Center = center;
             Radius = r;
-            Active = true;
         }
 
-        public override void Update()
+        public void Update()
         {
             foreach (Unit unit in Spawned)
             {
@@ -60,10 +59,7 @@ namespace Foregunners
             Score += 1;
         }
     }
-
-    // things to track better: 
-    // tooltips, stands, 
-
+	
     /// <summary>
     /// Tracks universal values across levels, UI states, game saves, etc. 
     /// </summary>

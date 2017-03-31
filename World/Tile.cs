@@ -74,46 +74,43 @@ namespace Foregunners
         public static int GetArrayZ(float pos)
         { return (int)Math.Floor(pos / DEPTH); }
         
-        public BoundingBox Bounds(Vector3 pos)
-        { return Bounds(GetArrayXY(pos.X), GetArrayXY(pos.Y), GetArrayZ(pos.Z)); }
-
         public static BoundingBox Bounds(int x, int y, int z)
         {
             Vector3 min = new Vector3(x * FOOT, y * FOOT, z * DEPTH);
             return new BoundingBox(min, min + Dimensions);
         }
+
+        public static BoundingBox Bounds(Vector3 pos)
+        { return Bounds(GetArrayXY(pos.X), GetArrayXY(pos.Y), GetArrayZ(pos.Z)); }
+        #endregion
 		
         public Vector3 Position { get; protected set; }
-        #endregion
-
-        // CROSSOVER FIELDS HERE 
-        private bool ImplementedSubtile = false;
+        public TileCollision Collision;
         public SeamStyle Style;
         public Subtile[,,] Sprites;
-        // END CROSSOVER 
-
         public Color Fill;
-        public bool Hidden = false;
-        public TileCollision Collision;
+		
+		public Tile()
+		{
+			Collision = TileCollision.Empty;
+			Style = SeamStyle.None;
 
-        public Tile()
+			// TODO: tile drawing method is still drawing these transparent tiles, 
+			// which is a huge resource drain 
+			Fill = Color.Transparent;
+		}
+
+        public Tile(Vector3 pos, TileCollision coll, SeamStyle style, Color fill)
         {
-            Fill = Color.Transparent;
-            Collision = TileCollision.Empty;
-        }
-        
-        public Tile(TileCollision coll, SeamStyle style, Color fill)
-        {
-            ImplementedSubtile = true;
             Style = style;
             Collision = coll;
             Fill = fill;
         }
 
-        public void LoadContextualSource(Neighbors hood)
+        public virtual void LoadContextualSource(Neighbors hood)
         {
-            int smoothCount = 0;
-            int quarter = FOOT / DIVS;
+			int edge = DIVS - 1;		// last index 
+            int quarter = FOOT / DIVS;	// for size of sprite sources 
             Sprites = new Subtile[DIVS, DIVS, DIVS];
             
             Rectangle smooth = new Rectangle(0, 0, quarter, quarter);
@@ -121,35 +118,33 @@ namespace Foregunners
             Rectangle straight = new Rectangle(quarter * 2, 0, quarter, quarter);
             Rectangle inside = new Rectangle(quarter * 3, 0, quarter, quarter);
 			
-            //Console.WriteLine(hood);
-
 			// Make the four edge subtiles straight sprites if no like tile above 
             if ((hood & Neighbors.TopCenter) != Neighbors.TopCenter)
             {
                 for (int i = 0; i < Sprites.GetLength(0); i++)
-                    Sprites[i, 0, 0] = new Subtile(straight, 0.0f);
+                    Sprites[i, 0, edge] = new Subtile(straight, 0.0f);
             }
             if ((hood & Neighbors.BottomCenter) != Neighbors.BottomCenter)
             {
                 for (int i = 0; i < Sprites.GetLength(0); i++)
-                    Sprites[i, Sprites.GetLength(1) - 1, 0] = new Subtile(straight, MathHelper.Pi);
+                    Sprites[i, Sprites.GetLength(1) - 1, edge] = new Subtile(straight, MathHelper.Pi);
             }
             if ((hood & Neighbors.CenterLeft) != Neighbors.CenterLeft)
             {
                 for (int i = 0; i < Sprites.GetLength(1); i++)
-                    Sprites[0, i, 0] = new Subtile(straight, -MathHelper.Pi / 2.0f);
+                    Sprites[0, i, edge] = new Subtile(straight, -MathHelper.Pi / 2.0f);
             }
             if ((hood & Neighbors.CenterRight) != Neighbors.CenterRight)
             {
                 for (int i = 0; i < Sprites.GetLength(1); i++)
-                    Sprites[Sprites.GetLength(0) - 1, i, 0] = new Subtile(straight, MathHelper.Pi / 2.0f);
+                    Sprites[Sprites.GetLength(0) - 1, i, edge] = new Subtile(straight, MathHelper.Pi / 2.0f);
             }
 
 			// Make corner subtiles inside corners if adjacent tiles alike, but diagonal not
 			if ((hood & (Neighbors.TopCenter | Neighbors.CenterRight)) == (Neighbors.TopCenter | Neighbors.CenterRight) &&
                 (hood & Neighbors.TopRight) == Neighbors.None)
             {
-                Sprites[Sprites.GetLength(0) - 1, 0, 0] = new Subtile(inside, 0.0f);
+                Sprites[Sprites.GetLength(0) - 1, 0, edge] = new Subtile(inside, 0.0f);
             }
             if ((hood & (Neighbors.BottomCenter | Neighbors.CenterRight)) == (Neighbors.BottomCenter | Neighbors.CenterRight) &&
                 (hood & Neighbors.BottomRight) == Neighbors.None)
@@ -159,68 +154,41 @@ namespace Foregunners
             if ((hood & (Neighbors.BottomCenter | Neighbors.CenterLeft)) == (Neighbors.BottomCenter | Neighbors.CenterLeft) &&
                 (hood & Neighbors.BottomLeft) == Neighbors.None)
             {
-                Sprites[0, Sprites.GetLength(1) - 1, 0] = new Subtile(inside, MathHelper.Pi);
+                Sprites[0, Sprites.GetLength(1) - 1, edge] = new Subtile(inside, MathHelper.Pi);
             }
             if ((hood & (Neighbors.TopCenter | Neighbors.CenterLeft)) == (Neighbors.TopCenter | Neighbors.CenterLeft) &&
                 (hood & Neighbors.TopLeft) == Neighbors.None)
             {
-                Sprites[0, 0, 0] = new Subtile(inside, -MathHelper.Pi / 2.0f);
+                Sprites[0, 0, edge] = new Subtile(inside, -MathHelper.Pi / 2.0f);
             }
 
 			// Make corner subtiles outside corners if like-tiles adjacent on opposite sides
             if ((hood & (Neighbors.TopCenter | Neighbors.CenterRight)) == Neighbors.None)
             {
-                Sprites[Sprites.GetLength(0) - 1, 0, 0] = new Subtile(outside, 0.0f);
+                Sprites[Sprites.GetLength(0) - 1, 0, edge] = new Subtile(outside, 0.0f);
             }
             if ((hood & (Neighbors.BottomCenter | Neighbors.CenterRight)) == Neighbors.None)
             {
-                Sprites[Sprites.GetLength(0) - 1, Sprites.GetLength(1) - 1, 0] = new Subtile(outside, MathHelper.Pi / 2.0f);
+                Sprites[Sprites.GetLength(0) - 1, Sprites.GetLength(1) - 1, edge] = new Subtile(outside, MathHelper.Pi / 2.0f);
             }
             if ((hood & (Neighbors.BottomCenter | Neighbors.CenterLeft)) == Neighbors.None)
             {
-                Sprites[0, Sprites.GetLength(1) - 1, 0] = new Subtile(outside, MathHelper.Pi);
+                Sprites[0, Sprites.GetLength(1) - 1, edge] = new Subtile(outside, MathHelper.Pi);
             }
             if ((hood & (Neighbors.TopCenter | Neighbors.CenterLeft)) == Neighbors.None)
             {
-                Sprites[0, 0, 0] = new Subtile(outside, -MathHelper.Pi / 2.0f);
+                Sprites[0, 0, edge] = new Subtile(outside, -MathHelper.Pi / 2.0f);
             }
 
             for (int subZ = 0; subZ < Sprites.GetLength(2); subZ++)
                 for (int subY = 0; subY < Sprites.GetLength(1); subY++)
                     for (int subX = 0; subX < Sprites.GetLength(0); subX++)
-                    {
                         if (Sprites[subX, subY, subZ] == null)
-                        {
                             Sprites[subX, subY, subZ] = new Subtile(smooth, 0.0f);
-                            smoothCount++;
-                        }
-                    }
-
-            //Console.WriteLine("Smooth count " + smoothCount);
         }
-
-        public Tile(TileCollision coll, Color fill)
-        {
-            Fill = fill;
-            Collision = coll;
-
-            if (coll == TileCollision.Landing)
-            {
-                Style = SeamStyle.Flat | SeamStyle.Slope;
-                ImplementedSubtile = true;
-            }
-			else if (coll == TileCollision.Solid)
-			{
-				Style = SeamStyle.Flat;
-				ImplementedSubtile = true;
-			}
-        }
-
+		
         public virtual void Draw(SpriteBatch batch, int x, int y, int z)
         {
-            if (Hidden)
-                return;
-
             Vector2 basePos = new Vector2(x * FOOT, y * FOOT);
 
             if (Sprites == null)
@@ -242,8 +210,8 @@ namespace Foregunners
 
                 for (int subZ = 0; subZ < DIVS; subZ++)
                 {
-                    float scaler = (z + 1) * DEPTH - (subZ * DEPTH / DIVS);
-                    float depth = Registry.GetDepth((z + 1) * DEPTH - subZ * (DEPTH / DIVS));
+					float scaler = z * DEPTH + (subZ * DEPTH / DIVS);
+                    float depth = Registry.GetDepth(scaler);
                     Vector2 offset = Vector2.Zero;
 
                     for (int subY = 0; subY < DIVS; subY++)
@@ -251,16 +219,17 @@ namespace Foregunners
                         offset.X = 0.0f;
                         for (int subX = 0; subX < DIVS; subX++)
                         {
-                            batch.Draw(
-                                Registry.Tilesheet,
-                                basePos + offset + Registry.Spin * scaler,
-                                Sprites[subX, subY, subZ].Source,
-                                Color.Lerp(Fill, Registry.Burn, Registry.Lerp(scaler)),
-                                Sprites[subX, subY, subZ].Rotation,
-                                origin,
-                                1.0f,
-                                SpriteEffects.None,
-                                depth);
+							if (Sprites[subX, subY, subZ] != null)
+								batch.Draw(
+									Registry.Tilesheet,
+									basePos + offset + Registry.Spin * scaler,
+									Sprites[subX, subY, subZ].Source,
+									Color.Lerp(Fill, Registry.Burn, Registry.Lerp(scaler)),
+									Sprites[subX, subY, subZ].Rotation,
+									origin,
+									1.0f,
+									SpriteEffects.None,
+									depth);
                             offset.X += FOOT / DIVS;
                         }
                         offset.Y += FOOT / DIVS;
@@ -281,15 +250,14 @@ namespace Foregunners
         private Point Incline;
         private Vector3 Center;
 
-        public Slope(Color fill, Point incline, Vector3 basePos)
-            : base(TileCollision.Slope, fill)
+        public Slope(Vector3 pos, Point incline, SeamStyle style, Color fill)
+            : base(pos, TileCollision.Slope, style, fill)
         {
             if (incline.X < -1 || incline.X > 1 || incline.Y < -1 || incline.Y > 1)
                 throw new NotSupportedException();
 
-            Center = basePos + Dimensions / 2;
+            Center = pos + Dimensions / 2;
             Incline = incline;
-            Style = SeamStyle.Slope;
         }
 
         public float GetHeight(Vector3 pos)
@@ -318,33 +286,19 @@ namespace Foregunners
             z = MathHelper.Clamp(z, Center.Z - DEPTH / 2, Center.Z + DEPTH / 2);
             return z;
         }
-        
-        public override void Draw(SpriteBatch spriteBatch, int x, int y, int z)
-        {
-            Vector2 origin = new Vector2(
-                MathHelper.Clamp(Incline.X, 0, 1), MathHelper.Clamp(Incline.Y, 0, 1));
-            
-            Vector2 basePos = new Vector2(
-                (x + MathHelper.Clamp(Incline.X, 0, 1)) * FOOT, 
-                (y + MathHelper.Clamp(Incline.Y, 0, 1)) * FOOT);
 
-            float scaler = (z + 1) * DEPTH - (DEPTH / DIVS);
+		public override void LoadContextualSource(Neighbors hood)
+		{
+			base.LoadContextualSource(hood);
 
-            Vector2 ledge = new Vector2(FOOT);
-            if (Incline.Y != 0)
-                ledge.Y /= 4;
-            if (Incline.X != 0)
-                ledge.X /= 4;
-
-            for (int i = 0; i < 3; i++)
-            {
-                Registry.DrawQuad(spriteBatch, basePos + Registry.Spin * scaler, 
-                    Color.Lerp(Fill, Registry.Burn, Registry.Lerp(scaler)),
-                    0.0f, ledge, Registry.GetDepth(scaler - i * (DEPTH / DIVS)), origin);
-                scaler -= DEPTH / 4;
-                ledge += new Vector2(Math.Abs(Incline.X) * FOOT / 4, 
-                    Math.Abs(Incline.Y) * FOOT / 4);
-            }
-        }
+			for (int z = 0; z < DIVS; z++)
+				for (int y = 0; y < DIVS; y++)
+					for (int x = 0; x < DIVS; x++)
+					{
+						if (Incline.X == -1 && z + x > DIVS - 1 || Incline.X == 1 && z > x ||
+							Incline.Y == -1 && z + y > DIVS - 1 || Incline.Y == 1 && z > y)
+							Sprites[x, y, z] = null;
+					}
+		}
     }
 }

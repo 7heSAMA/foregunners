@@ -14,18 +14,54 @@ namespace Foregunners
         public abstract string Contents { get; }
         public bool Active { get; protected set; }
         public SpriteFont Font { get; protected set; }
-
-        // TODO: use this - make expanding/collapsing the box a script, and give other options 
-		//public IScript OnClick;
-
+		
         public Vector2 Size
         { get { return Font.MeasureString(Pad(Contents)); } }
         public Vector2 Position { get; protected set; }
 
-        public TextBox(SpriteFont font)
+        public static TextBox Make(object target, string propName, SpriteFont font)
         {
-            Font = font;
+			return new AutoBox(target, propName, font);
         }
+
+		public static TextBox Make(string contents, SpriteFont font)
+		{
+			return new ManualBox(contents, font);
+		}
+
+		private class AutoBox : TextBox
+		{
+			public override string Contents
+			{ get { return Property.GetValue(Target).ToString(); } }
+
+			private System.Reflection.PropertyInfo Property;
+			private object Target;
+
+			public AutoBox(object target, string propName, SpriteFont font)
+				: base(font)
+			{
+				Target = target;
+				Property = Target.GetType().GetProperty(propName);
+			}
+		}
+
+		private class ManualBox : TextBox
+		{
+			private string _contents;
+			public override string Contents
+			{ get { return _contents; } }
+
+			public ManualBox(string contents, SpriteFont font)
+				: base(font)
+			{
+				_contents = contents;
+			}
+		}
+
+		protected TextBox(SpriteFont font)
+		{
+			Font = font;
+		}
 
         public void Update()
         {
@@ -59,7 +95,7 @@ namespace Foregunners
             return " " + data + " ";
         }
     }
-	
+	/*
     public class ManualBox : TextBox
     {
         private string _contents;
@@ -88,7 +124,7 @@ namespace Foregunners
             Property = Target.GetType().GetProperty(propName);
         }
     }
-    
+    */
     public class Tooltip : IComparable<Tooltip>
     {
         public const float LINEWIDTH = 2.0f;

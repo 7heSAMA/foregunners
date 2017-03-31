@@ -33,11 +33,11 @@ namespace Foregunners
 
         private void Tipper2()
         {
-            Tooltip vitals = new Tooltip(this, new ManualBox("Avatar", Registry.Header));
+            Tooltip vitals = new Tooltip(this, TextBox.Make("Avatar", Registry.Header));
 
-            vitals.AddEntry(new AutoBox(this, "Shield", Registry.Body));
-            vitals.AddEntry(new AutoBox(this, "Armor", Registry.Body));
-            vitals.AddEntry(new AutoBox(this, "Hull", Registry.Body));
+            vitals.AddEntry(TextBox.Make(this, "Shield", Registry.Body));
+            vitals.AddEntry(TextBox.Make(this, "Armor", Registry.Body));
+            vitals.AddEntry(TextBox.Make(this, "Hull", Registry.Body));
 
             TipSorter.Add(vitals);
         }

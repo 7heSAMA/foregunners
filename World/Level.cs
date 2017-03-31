@@ -141,9 +141,9 @@ namespace Foregunners
                     for (int x = 0; x < Width; x++)
                     {
 						// TODO: remove this once all tiles implement SeamStyle and subtiles 
-                        if (!(Tiles[x, y, z].Collision == TileCollision.Solid ||
-                            Tiles[x, y, z].Collision == TileCollision.Landing))
-                            continue;
+                        //if (!(Tiles[x, y, z].Collision == TileCollision.Solid ||
+                        //    Tiles[x, y, z].Collision == TileCollision.Landing))
+                        //    continue;
 
                         Neighbors hood = Neighbors.None;
 						SeamStyle style = Tiles[x, y, z].Style;
@@ -282,57 +282,36 @@ namespace Foregunners
 			{
 				case '.':
 					return new Tile();
+
 				case '#':
-					return new Tile(TileCollision.Solid, BoneWhite);
 				case '_':
-					return new Tile(TileCollision.Solid, Color.DimGray);
 				case '"':
-					return new Tile(TileCollision.Solid, Color.DimGray);
 				case '~':
-					return new Tile(TileCollision.Solid, Color.LightSteelBlue);
-
-				case 'W':
-					return new Tile(TileCollision.Landing, Color.LightSteelBlue);
-
-				case 'P':
-					return new Tile(TileCollision.Solid, Color.DarkSlateGray);
-				case 'T':
-					return new Tile(TileCollision.Landing, BoneWhite);
-				case 't':
-					return new Tile(TileCollision.Landing, Color.BurlyWood);
+					return new Tile(minCorner, TileCollision.Solid, SeamStyle.Flat, BoneWhite);
 
 				case '0':
-					return new Tile(TileCollision.Landing, BoneWhite);
-
-				case '$':
-					return new Tile(TileCollision.Solid, Color.IndianRed);
-
+				case 'T':
+					return new Tile(minCorner, TileCollision.Landing, SeamStyle.Flat | SeamStyle.Slope, BoneWhite);
+					
 				case '1':
-					return new Slope(BoneWhite, new Point(1, -1), minCorner);
+					return new Slope(minCorner, new Point(1, -1), SeamStyle.Slope, BoneWhite);
 				case '2':
-					return new Slope(BoneWhite, new Point(1, 0), minCorner);
+					return new Slope(minCorner, new Point(1, 0), SeamStyle.Slope, BoneWhite);
 				case '3':
-					return new Slope(BoneWhite, new Point(1, 1), minCorner);
+					return new Slope(minCorner, new Point(1, 1), SeamStyle.Slope, BoneWhite);
 				case '4':
-					return new Slope(BoneWhite, new Point(0, 1), minCorner);
+					return new Slope(minCorner, new Point(0, 1), SeamStyle.Slope, BoneWhite);
 				case '5':
-					return new Slope(BoneWhite, new Point(-1, 1), minCorner);
+					return new Slope(minCorner, new Point(-1, 1), SeamStyle.Slope, BoneWhite);
 				case '6':
-					return new Slope(BoneWhite, new Point(-1, 0), minCorner);
+					return new Slope(minCorner, new Point(-1, 0), SeamStyle.Slope, BoneWhite);
 				case '7':
-					return new Slope(BoneWhite, new Point(-1, -1), minCorner);
+					return new Slope(minCorner, new Point(-1, -1), SeamStyle.Slope, BoneWhite);
 				case '8':
-					return new Slope(BoneWhite, new Point(0, -1), minCorner);
-
-				case '-':
-					return new Tile();
-
-				case '+':
-					return new Tile();
-
+					return new Slope(minCorner, new Point(0, -1), SeamStyle.Slope, BoneWhite);
+					
 				case '@':
-					Player player = new Player(minCorner + new Vector3(
-						0, 0, Tile.DEPTH));
+					Player player = new Player(minCorner + new Vector3(Tile.Origin, Tile.DEPTH));
 
 					Registry.Avatar = player;
 					Registry.UnitMan.Add(player);
@@ -341,7 +320,7 @@ namespace Foregunners
 
 				case 'x':
 					Registry.UnitMan.Add(new Beetle(minCorner + new Vector3(
-						Tile.FOOT / 2, Tile.FOOT / 2, Tile.DEPTH * 2)));
+						Tile.Origin, Tile.DEPTH * 2)));
 					return new Tile();
 
 				default:

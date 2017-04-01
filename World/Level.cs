@@ -20,7 +20,6 @@ namespace Foregunners
 		public Level(string map, IServiceProvider serviceProvider)
 		{
 			LoadTiles(map);
-			LoadContextSource();
 
 			if (map != "dusk")
 			{
@@ -44,6 +43,13 @@ namespace Foregunners
 			}
 		}
 
+		public void Initialize()
+		{
+			// Moved because Incline LoadContextualSource
+			// needed to be able to access the map through registry
+			LoadContextSource();
+		}
+
 		#region Bounds and Collision
 		public TileCollision GetCollision(Vector3 pos)
         {
@@ -53,32 +59,40 @@ namespace Foregunners
                 Tile.GetArrayZ(pos.Z));
         }
 
-        public SeamStyle GetStyle(int x, int y, int z)
+		public TileCollision GetCollision(int x, int y, int z)
+		{
+			int groundLevel = 0;
+
+			if (z < 0)
+				return TileCollision.Solid;
+			else if (z > Depth - 1)
+				return TileCollision.Empty;
+
+			else if (x < 0 || x > Width - 1 || y > Height - 1 || y < 0)
+			{
+				if (z < groundLevel)
+					return TileCollision.Solid;
+				else
+					return TileCollision.Empty;
+			}
+			else
+				return Tiles[x, y, z].Collision;
+		}
+
+		public SeamStyle GetStyle(Vector3 pos)
+		{
+			return GetStyle(
+				Tile.GetArrayXY(pos.X), 
+				Tile.GetArrayXY(pos.Y), 
+				Tile.GetArrayZ(pos.Z));
+		}
+
+		public SeamStyle GetStyle(int x, int y, int z)
         {
             if (x < 0 || x >= Width || y < 0 || y >= Height || z < 0 || z >= Depth)
                 return SeamStyle.None;
 
             return Tiles[x, y, z].Style;
-        }
-
-        public TileCollision GetCollision(int x, int y, int z)
-        {
-            int groundLevel = 0; 
-
-            if (z < 0)
-                return TileCollision.Solid;
-            else if (z > Depth - 1)
-                return TileCollision.Empty;
-
-            else if (x < 0 || x > Width - 1 || y > Height - 1 || y < 0)
-            {
-                if (z < groundLevel)
-                    return TileCollision.Solid;
-                else
-                    return TileCollision.Empty;
-            }
-            else
-                return Tiles[x, y, z].Collision;
         }
 
         public float GetSlope(Vector3 pos)
@@ -91,6 +105,8 @@ namespace Foregunners
         {
             if (GetCollision(x, y, z) == TileCollision.Landing)
             {
+				// if this is a platform under another slope, 
+				// return that slope's height 
                 if (GetCollision(x, y, z + 1) == TileCollision.Slope)
                     return (Tiles[x, y, z + 1] as Slope).GetHeight(pos);
                 else
@@ -140,10 +156,8 @@ namespace Foregunners
                 {
                     for (int x = 0; x < Width; x++)
                     {
-						// TODO: remove this once all tiles implement SeamStyle and subtiles 
-                        //if (!(Tiles[x, y, z].Collision == TileCollision.Solid ||
-                        //    Tiles[x, y, z].Collision == TileCollision.Landing))
-                        //    continue;
+						if (Tiles[x, y, z].Sprites == null)
+							continue;
 
                         Neighbors hood = Neighbors.None;
 						SeamStyle style = Tiles[x, y, z].Style;
@@ -220,8 +234,8 @@ namespace Foregunners
             for (int z = 0; z < Depth; z++)
                 for (int y = 0; y < Height; y++)
                     for (int x = 0; x < Width; x++)
-                        if (Tiles[x, y, z].Fill != Color.Transparent)
-                            Tiles[x, y, z].Draw(spriteBatch, x, y, z);
+                        if (Tiles[x, y, z].Sprites != null)
+                            Tiles[x, y, z].Draw(spriteBatch);
         }
 
 		private void LoadTiles(string mapName)

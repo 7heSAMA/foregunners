@@ -46,7 +46,17 @@ namespace Foregunners
 
     public class Subtile
     {
-        public Rectangle Source { get; protected set; }
+		// 1/4 the size of a tile 
+		public static readonly int Quarter = Tile.FOOT / Tile.DIVS;
+		// 1/8 the size of a tile
+		public static readonly Vector2 Origin = new Vector2(Quarter / 2);
+
+		public static Rectangle Smooth = new Rectangle(0, 0, Quarter, Quarter);
+		public static Rectangle Outside = new Rectangle(Quarter, 0, Quarter, Quarter);
+		public static Rectangle Straight = new Rectangle(Quarter * 2, 0, Quarter, Quarter);
+		public static Rectangle Inside = new Rectangle(Quarter * 3, 0, Quarter, Quarter);
+
+		public Rectangle Source { get; protected set; }
         public SpriteEffects Fx { get; protected set; }
         public float Rotation { get; protected set; }
 
@@ -55,6 +65,12 @@ namespace Foregunners
             Source = source;
             Rotation = rads;
         }
+
+		public Subtile()
+		{
+			Source = Rectangle.Empty;
+			Rotation = 0.0f;
+		}
     }
 
     public class Tile : IWorld
@@ -94,154 +110,145 @@ namespace Foregunners
 		{
 			Collision = TileCollision.Empty;
 			Style = SeamStyle.None;
-
-			// TODO: tile drawing method is still drawing these transparent tiles, 
-			// which is a huge resource drain 
-			Fill = Color.Transparent;
+			Sprites = null;
 		}
 
         public Tile(Vector3 pos, TileCollision coll, SeamStyle style, Color fill)
         {
-            Style = style;
+			Position = pos;
             Collision = coll;
-            Fill = fill;
+			Style = style;
+			Sprites = new Subtile[DIVS, DIVS, DIVS];
+			Fill = fill;
         }
 
-        public virtual void LoadContextualSource(Neighbors hood)
-        {
-			int edge = DIVS - 1;		// last index 
-            int quarter = FOOT / DIVS;	// for size of sprite sources 
-            Sprites = new Subtile[DIVS, DIVS, DIVS];
-            
-            Rectangle smooth = new Rectangle(0, 0, quarter, quarter);
-            Rectangle outside = new Rectangle(quarter, 0, quarter, quarter);
-            Rectangle straight = new Rectangle(quarter * 2, 0, quarter, quarter);
-            Rectangle inside = new Rectangle(quarter * 3, 0, quarter, quarter);
+		public virtual void LoadContextualSource(Neighbors hood)
+		{
+			if (Registry.Stage.GetStyle(Position + new Vector3(Vector2.Zero, DEPTH)) == Style)
+			{
+				SmoothSubtiles();
+				return;
+			}
+
+			// index of top top subtile by depth 
+			int edge = DIVS - 1;
 			
 			// Make the four edge subtiles straight sprites if no like tile above 
             if ((hood & Neighbors.TopCenter) != Neighbors.TopCenter)
             {
                 for (int i = 0; i < Sprites.GetLength(0); i++)
-                    Sprites[i, 0, edge] = new Subtile(straight, 0.0f);
+                    Sprites[i, 0, edge] = new Subtile(Subtile.Straight, 0.0f);
             }
             if ((hood & Neighbors.BottomCenter) != Neighbors.BottomCenter)
             {
                 for (int i = 0; i < Sprites.GetLength(0); i++)
-                    Sprites[i, Sprites.GetLength(1) - 1, edge] = new Subtile(straight, MathHelper.Pi);
+                    Sprites[i, Sprites.GetLength(1) - 1, edge] = new Subtile(Subtile.Straight, MathHelper.Pi);
             }
             if ((hood & Neighbors.CenterLeft) != Neighbors.CenterLeft)
             {
                 for (int i = 0; i < Sprites.GetLength(1); i++)
-                    Sprites[0, i, edge] = new Subtile(straight, -MathHelper.Pi / 2.0f);
+                    Sprites[0, i, edge] = new Subtile(Subtile.Straight, -MathHelper.Pi / 2.0f);
             }
             if ((hood & Neighbors.CenterRight) != Neighbors.CenterRight)
             {
                 for (int i = 0; i < Sprites.GetLength(1); i++)
-                    Sprites[Sprites.GetLength(0) - 1, i, edge] = new Subtile(straight, MathHelper.Pi / 2.0f);
+                    Sprites[Sprites.GetLength(0) - 1, i, edge] = new Subtile(Subtile.Straight, MathHelper.Pi / 2.0f);
             }
 
 			// Make corner subtiles inside corners if adjacent tiles alike, but diagonal not
 			if ((hood & (Neighbors.TopCenter | Neighbors.CenterRight)) == (Neighbors.TopCenter | Neighbors.CenterRight) &&
                 (hood & Neighbors.TopRight) == Neighbors.None)
             {
-                Sprites[Sprites.GetLength(0) - 1, 0, edge] = new Subtile(inside, 0.0f);
+                Sprites[Sprites.GetLength(0) - 1, 0, edge] = new Subtile(Subtile.Inside, 0.0f);
             }
             if ((hood & (Neighbors.BottomCenter | Neighbors.CenterRight)) == (Neighbors.BottomCenter | Neighbors.CenterRight) &&
                 (hood & Neighbors.BottomRight) == Neighbors.None)
             {
-                Sprites[Sprites.GetLength(0) - 1, Sprites.GetLength(1) - 1, 0] = new Subtile(inside, MathHelper.Pi / 2.0f);
+                Sprites[Sprites.GetLength(0) - 1, Sprites.GetLength(1) - 1, edge] = new Subtile(Subtile.Inside, MathHelper.Pi / 2.0f);
             }
             if ((hood & (Neighbors.BottomCenter | Neighbors.CenterLeft)) == (Neighbors.BottomCenter | Neighbors.CenterLeft) &&
                 (hood & Neighbors.BottomLeft) == Neighbors.None)
             {
-                Sprites[0, Sprites.GetLength(1) - 1, edge] = new Subtile(inside, MathHelper.Pi);
+                Sprites[0, Sprites.GetLength(1) - 1, edge] = new Subtile(Subtile.Inside, MathHelper.Pi);
             }
             if ((hood & (Neighbors.TopCenter | Neighbors.CenterLeft)) == (Neighbors.TopCenter | Neighbors.CenterLeft) &&
                 (hood & Neighbors.TopLeft) == Neighbors.None)
             {
-                Sprites[0, 0, edge] = new Subtile(inside, -MathHelper.Pi / 2.0f);
+                Sprites[0, 0, edge] = new Subtile(Subtile.Inside, -MathHelper.Pi / 2.0f);
             }
 
 			// Make corner subtiles outside corners if like-tiles adjacent on opposite sides
             if ((hood & (Neighbors.TopCenter | Neighbors.CenterRight)) == Neighbors.None)
             {
-                Sprites[Sprites.GetLength(0) - 1, 0, edge] = new Subtile(outside, 0.0f);
+                Sprites[Sprites.GetLength(0) - 1, 0, edge] = new Subtile(Subtile.Outside, 0.0f);
             }
             if ((hood & (Neighbors.BottomCenter | Neighbors.CenterRight)) == Neighbors.None)
             {
-                Sprites[Sprites.GetLength(0) - 1, Sprites.GetLength(1) - 1, edge] = new Subtile(outside, MathHelper.Pi / 2.0f);
+                Sprites[Sprites.GetLength(0) - 1, Sprites.GetLength(1) - 1, edge] = new Subtile(Subtile.Outside, MathHelper.Pi / 2.0f);
             }
             if ((hood & (Neighbors.BottomCenter | Neighbors.CenterLeft)) == Neighbors.None)
             {
-                Sprites[0, Sprites.GetLength(1) - 1, edge] = new Subtile(outside, MathHelper.Pi);
+                Sprites[0, Sprites.GetLength(1) - 1, edge] = new Subtile(Subtile.Outside, MathHelper.Pi);
             }
             if ((hood & (Neighbors.TopCenter | Neighbors.CenterLeft)) == Neighbors.None)
             {
-                Sprites[0, 0, edge] = new Subtile(outside, -MathHelper.Pi / 2.0f);
+                Sprites[0, 0, edge] = new Subtile(Subtile.Outside, -MathHelper.Pi / 2.0f);
             }
 
-            for (int subZ = 0; subZ < Sprites.GetLength(2); subZ++)
-                for (int subY = 0; subY < Sprites.GetLength(1); subY++)
-                    for (int subX = 0; subX < Sprites.GetLength(0); subX++)
-                        if (Sprites[subX, subY, subZ] == null)
-                            Sprites[subX, subY, subZ] = new Subtile(smooth, 0.0f);
+			SmoothSubtiles();
         }
+
+		private void SmoothSubtiles()
+		{
+			for (int subZ = 0; subZ < Sprites.GetLength(2); subZ++)
+				for (int subY = 0; subY < Sprites.GetLength(1); subY++)
+					for (int subX = 0; subX < Sprites.GetLength(0); subX++)
+						if (Sprites[subX, subY, subZ] == null)
+						{
+							Sprites[subX, subY, subZ] = new Subtile(Subtile.Smooth, 0.0f);
+						}
+		}
 		
-        public virtual void Draw(SpriteBatch batch, int x, int y, int z)
+        public virtual void Draw(SpriteBatch batch)
         {
-            Vector2 basePos = new Vector2(x * FOOT, y * FOOT);
+            Vector2 basePos = new Vector2(Position.X, Position.Y);
+			basePos += Subtile.Origin;
+			
+			// created here so we don't make 64 temp variables
+			Vector2 offset, oriPos;
+			Rectangle source;
 
-            if (Sprites == null)
-            {
-                float scaler = (z + 1) * DEPTH;
+			for (int subZ = 0; subZ < DIVS; subZ++)
+			{
+				float scaler = Position.Z + (subZ * DEPTH / DIVS);
+				float depth = Registry.GetDepth(scaler);
+				offset = Vector2.Zero;
 
-                for (int i = 0; i < DIVS; i++)
-                {
-                    Registry.DrawQuad(batch, basePos + Registry.Spin * scaler,
-                        Color.Lerp(Fill, Registry.Burn, Registry.Lerp(scaler)),
-                        0.0f, Print, Registry.GetDepth(scaler - i * (DEPTH / DIVS)), false);
-                    scaler -= DEPTH / DIVS;
-                }
-            }
-            else
-            {
-                Vector2 origin = new Vector2(FOOT / (DIVS * 2));
-                basePos += origin;
-
-                for (int subZ = 0; subZ < DIVS; subZ++)
-                {
-					float scaler = z * DEPTH + (subZ * DEPTH / DIVS);
-                    float depth = Registry.GetDepth(scaler);
-                    Vector2 offset = Vector2.Zero;
-
-                    for (int subY = 0; subY < DIVS; subY++)
-                    {
-                        offset.X = 0.0f;
-                        for (int subX = 0; subX < DIVS; subX++)
-                        {
-							if (Sprites[subX, subY, subZ] != null)
-								batch.Draw(
-									Registry.Tilesheet,
-									basePos + offset + Registry.Spin * scaler,
-									Sprites[subX, subY, subZ].Source,
-									Color.Lerp(Fill, Registry.Burn, Registry.Lerp(scaler)),
-									Sprites[subX, subY, subZ].Rotation,
-									origin,
-									1.0f,
-									SpriteEffects.None,
-									depth);
-                            offset.X += FOOT / DIVS;
-                        }
-                        offset.Y += FOOT / DIVS;
-                    }
-                }
-            }
-        }
-
-        public void Draw(SpriteBatch batch)
-        {
-            // TODO : Implement Sprite methods in Tile
-            throw new NotImplementedException();
+				for (int subY = 0; subY < DIVS; subY++)
+				{
+					offset.X = 0.0f;
+					for (int subX = 0; subX < DIVS; subX++)
+					{
+						source = Sprites[subX, subY, subZ].Source;
+						if (source != Rectangle.Empty)
+						{
+							oriPos = basePos + offset + Registry.Spin * scaler;
+							batch.Draw(
+								Registry.Tilesheet,
+								oriPos,
+								source,
+								Color.Lerp(Fill, Registry.Burn, Registry.Lerp(scaler + 12)),
+								Sprites[subX, subY, subZ].Rotation,
+								Subtile.Origin,
+								1.0f,
+								SpriteEffects.None,
+								depth);
+						}
+						offset.X += Subtile.Quarter;
+					}
+					offset.Y += Subtile.Quarter;
+				}
+			}
         }
     }
 
@@ -291,13 +298,29 @@ namespace Foregunners
 		{
 			base.LoadContextualSource(hood);
 
-			for (int z = 0; z < DIVS; z++)
+			int mapX = GetArrayXY(Position.X);
+			int mapY = GetArrayXY(Position.Y);
+			int mapZ = GetArrayZ(Position.Z);
+
+			for (int z = DIVS - 1; z >= 0; z--)
 				for (int y = 0; y < DIVS; y++)
 					for (int x = 0; x < DIVS; x++)
 					{
-						if (Incline.X == -1 && z + x > DIVS - 1 || Incline.X == 1 && z > x ||
-							Incline.Y == -1 && z + y > DIVS - 1 || Incline.Y == 1 && z > y)
-							Sprites[x, y, z] = null;
+						//	Check against the line of the slope
+						if (Incline.X == -1 && z + x >= DIVS - 1 || Incline.X == 1 && z >= x ||
+							Incline.Y == -1 && z + y >= DIVS - 1 || Incline.Y == 1 && z >= y)
+						{
+							// Check to see if an X slope is by nothing north/south 
+							// or a Y slope by nothing east/west, to clone edge sprites
+							if (z > 0 && (
+								(y == 0 && Registry.Stage.GetStyle(mapX, mapY - 1, mapZ) == SeamStyle.None) ||
+								(y == DIVS - 1 && Registry.Stage.GetStyle(mapX, mapY + 1, mapZ) == SeamStyle.None) ||
+								(x == 0 && Registry.Stage.GetStyle(mapX - 1, mapY, mapZ) == SeamStyle.None) ||
+								(x == DIVS - 1 && Registry.Stage.GetStyle(mapX + 1, mapY, mapZ) == SeamStyle.None)))
+								Sprites[x, y, z - 1] = Sprites[x, y, z];
+							
+							Sprites[x, y, z] = new Subtile();
+						}
 					}
 		}
     }

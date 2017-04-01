@@ -102,9 +102,7 @@ namespace Foregunners
         public static Color BoneWhite = Color.Lerp(Color.LightGray, Color.MonoGameOrange, 0.1f);
         public static Color DarkPurple = new Color(24, 8, 18);
         public static Color BurnThru = Color.Lerp(DarkPurple, Color.TransparentBlack, 0.25f);
-
-        public static Level[,] Map;
-
+		
         public static float Lerp(float z)
         {
             return 1.0f - (z / (8 * Stage.Depth * Tile.DEPTH));

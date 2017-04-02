@@ -171,12 +171,7 @@ namespace Foregunners
             Registry.MunMan.Activate(Wielder, Offset, mv, Payload);
         }
     }
-
-    public class ArtilleryMount
-    {
-
-    }
-    
+	
     public class Munition : SimFrame
     {
         Specs Specification;
@@ -184,7 +179,7 @@ namespace Foregunners
         bool Struck;
 
         public Munition(Specs spec)
-            : base (spec.Drag, spec.Elasticity, spec.Gravitized)
+            : base (2, 2, spec.Drag, spec.Elasticity, spec.Gravitized)
         {
             Specification = spec;
             Struck = false;
@@ -198,9 +193,9 @@ namespace Foregunners
             TileCollision collision = Registry.Stage.GetCollision(Position);
 
             if (collision == TileCollision.Landing || collision == TileCollision.Solid || 
-                (collision == TileCollision.Slope && Position.Z < Registry.Stage.GetSlope(
-                    Position)))
-                Struck = true;
+				(collision == TileCollision.Slope && Position.Z < Registry.Stage.GetSlope(
+					Position)))
+				Struck = true;
         }
 
         protected override void RunLogic(float cycleTime)
@@ -279,19 +274,6 @@ namespace Foregunners
             Munition mun = new Munition(spec);
             mun.Shoot(shooter, pos, mom);
             Active.Add(mun);
-
-            /*if (Stored.Count == 0)
-                Add(10);
-
-            Stored[0].Shoot(pos, mom);
-            Active.Add(Stored[0]);
-            Stored.Remove(Stored[0]);*/
-        }
-
-        private void Add(int num)
-        {
-            /*for (int i = 0; i < num; i++)
-                Stored.Add(new Munition());*/
         }
     }
 }

@@ -8,7 +8,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Foregunners
 {
-    public abstract class Unit : SimCube
+    public abstract class Unit : SimFrame
     {
 		public enum Tag
 		{
@@ -61,16 +61,6 @@ namespace Foregunners
             RechargeTimer = RechargeSpan;
         }
 
-        private void Drill(Vector3 pos)
-        {
-            Position = pos - new Vector3(0.0f, 0.0f, Tile.DEPTH * 10);
-            Velocity = new Vector3(0.0f, 0.0f, 40.0f);
-            Gravitized = false;
-            Collides = false;
-
-            Hull = 200;
-        }
-
         public void Damage(int ke, int em)
         {
             DealEM(em);
@@ -120,9 +110,6 @@ namespace Foregunners
 
         protected override void RunLogic(float cycleTime)
         {
-            /*if (Tipper != null)
-                Tipper.Update();*/
-
             RechargeTimer += cycleTime;
             if (RechargeTimer > RechargeSpan)
             {

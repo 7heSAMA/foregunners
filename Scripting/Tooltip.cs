@@ -19,11 +19,11 @@ namespace Foregunners
         { get { return Font.MeasureString(Pad(Contents)); } }
         public Vector2 Position { get; protected set; }
 
-        public static TextBox Make(object target, string propName, SpriteFont font)
-        {
-			return new AutoBox(target, propName, font);
-        }
-
+		public static TextBox Make(object target, string propName, SpriteFont font, string desc = "")
+		{
+			return new AutoBox(target, propName, font, desc);
+		}
+		
 		public static TextBox Make(string contents, SpriteFont font)
 		{
 			return new ManualBox(contents, font);
@@ -31,17 +31,20 @@ namespace Foregunners
 
 		private class AutoBox : TextBox
 		{
+			private string Desc;
+
 			public override string Contents
-			{ get { return Property.GetValue(Target).ToString(); } }
+			{ get { return  Desc + Property.GetValue(Target).ToString(); } }
 
 			private System.Reflection.PropertyInfo Property;
 			private object Target;
 
-			public AutoBox(object target, string propName, SpriteFont font)
+			public AutoBox(object target, string propName, SpriteFont font, string desc)
 				: base(font)
 			{
 				Target = target;
 				Property = Target.GetType().GetProperty(propName);
+				Desc = desc;
 			}
 		}
 
@@ -95,36 +98,7 @@ namespace Foregunners
             return " " + data + " ";
         }
     }
-	/*
-    public class ManualBox : TextBox
-    {
-        private string _contents;
-        public override string Contents
-        { get { return _contents; } }
 
-        public ManualBox(string contents, SpriteFont font)
-            :base(font)
-        {
-            _contents = contents;
-        }
-    }
-
-    public class AutoBox : TextBox
-    {
-        public override string Contents
-        { get { return Property.GetValue(Target).ToString(); } }
-
-        private System.Reflection.PropertyInfo Property;
-        private object Target;
-
-        public AutoBox(object target, string propName, SpriteFont font)
-            :base(font)
-        {
-            Target = target;
-            Property = Target.GetType().GetProperty(propName);
-        }
-    }
-    */
     public class Tooltip : IComparable<Tooltip>
     {
         public const float LINEWIDTH = 2.0f;

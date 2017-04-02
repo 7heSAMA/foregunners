@@ -8,58 +8,6 @@ using Microsoft.Xna.Framework.Input;
 
 namespace Foregunners
 {
-    public class BasicWave : IScript
-    {
-        public int Score = 0;
-        public int NumEnemies = 3;
-        protected List<Unit> Spawned = new List<Unit>();
-        
-        private Vector3 Center;
-        private float Radius;
-
-        public BasicWave(Vector3 center, float r)
-        {
-            Center = center;
-            Radius = r;
-        }
-
-        public void Update()
-        {
-            foreach (Unit unit in Spawned)
-            {
-                if (unit.Active)
-                    return;
-            }
-
-            Spawned.Clear();
-
-            float angle = 0.0f;
-            float slice = MathHelper.TwoPi / NumEnemies;
-            
-            for (int i = 0; i < NumEnemies; i++)
-            {
-                Vector3 pos = Center + new Vector3(
-                    (float)Math.Cos(angle),
-                    (float)Math.Sin(angle),
-                    0.0f) * Tile.FOOT * 10;
-
-                Unit toAdd;
-                float chanceBeetle = 1.0f;
-                if (Registry.RNG.NextDouble() < chanceBeetle)
-                    toAdd = new Beetle(pos);
-                else
-                    toAdd = new Dummy(pos);
-
-                Spawned.Add(toAdd);
-                Registry.UnitMan.Add(toAdd);
-                angle += slice;
-            }
-
-            NumEnemies += 1;
-            Score += 1;
-        }
-    }
-	
     /// <summary>
     /// Tracks universal values across levels, UI states, game saves, etc. 
     /// </summary>
@@ -97,17 +45,11 @@ namespace Foregunners
         public static bool Debug { get; private set; }
 
         public static List<IScript> Scripts;
-
-        public static Color Burn;
+		
         public static Color BoneWhite = Color.Lerp(Color.LightGray, Color.MonoGameOrange, 0.1f);
         public static Color DarkPurple = new Color(24, 8, 18);
         public static Color BurnThru = Color.Lerp(DarkPurple, Color.TransparentBlack, 0.25f);
 		
-        public static float Lerp(float z)
-        {
-            return 1.0f - (z / (8 * Stage.Depth * Tile.DEPTH));
-        }
-
         public static void LoadGameServices(
             GraphicsDevice graphics, ContentManager content, GameServiceContainer services)
         {
@@ -173,13 +115,7 @@ namespace Foregunners
 
             if (Stage != null)
                 Stage.Update();
-
-            if (Avatar != null)
-                Burn = Color.Lerp(DarkPurple, Color.Black,
-                    new Vector2(
-                        Avatar.Position.X, Avatar.Position.Y).Length() / 
-                    (Tile.FOOT * 16));
-
+			
             foreach (IManager man in Managers)
                 man.RunSim(cycleTime);
 
@@ -230,8 +166,7 @@ namespace Foregunners
             else
                 return false;
         }
-
-        // WORKS AS COMMENTED 
+	
         public static Vector2 WorldOnOverlay(Vector3 pos)
         {
             Vector2 flatPos = new Vector2(pos.X, pos.Y) - Main.Cam.Pos;
@@ -262,8 +197,7 @@ namespace Foregunners
         /// </summary>
         /// <param name="screen">XY coord with origin in top left.</param>
         /// <param name="z">The world depth we are looking at.</param>
-        /// <returns></returns>
-        public static Vector3 OverlayToWorld(Point screen, float z)
+        public static Vector3 OverlayToWorld(Point screen, float z = 0.0f)
         {
             Vector2 pos = new Vector2(
                 screen.X - Main.viewport.Width / 2,
@@ -283,10 +217,7 @@ namespace Foregunners
 
             return new Vector3(pos, z);
         }
-
-        public static Vector3 OverlayToWorld(Point screen)
-        { return OverlayToWorld(screen, 0.0f); }
-        
+		
         private static Vector3 CastMouseToWorld()
         {
             if (Stage == null)

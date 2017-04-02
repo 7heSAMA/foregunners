@@ -108,7 +108,7 @@ namespace Foregunners
         protected override void Draw(GameTime gameTime)
         {
             // Clear 
-            GraphicsDevice.Clear(Registry.Burn);
+            GraphicsDevice.Clear(Registry.DarkPurple);
             
             // Begin transformed 
             Batch.Begin(SpriteSortMode.BackToFront,

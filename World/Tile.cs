@@ -124,7 +124,7 @@ namespace Foregunners
 
 		public virtual void LoadContextualSource(Neighbors hood)
 		{
-			if (Registry.Stage.GetStyle(Position + new Vector3(Vector2.Zero, DEPTH)) == Style)
+			if (Registry.Stage.GetStyle(Position + new Vector3(Vector2.Zero, DEPTH)).HasFlag(Style))
 			{
 				SmoothSubtiles();
 				return;
@@ -220,7 +220,8 @@ namespace Foregunners
 
 			for (int subZ = 0; subZ < DIVS; subZ++)
 			{
-				float scaler = Position.Z + (subZ * DEPTH / DIVS);
+				// increase subZ by 1 so sprites push up against bounding area
+				float scaler = Position.Z + ((subZ + 1) * DEPTH / DIVS);
 				float depth = Registry.GetDepth(scaler);
 				offset = Vector2.Zero;
 
@@ -237,7 +238,7 @@ namespace Foregunners
 								Registry.Tilesheet,
 								oriPos,
 								source,
-								Color.Lerp(Fill, Registry.Burn, Registry.Lerp(scaler + 12)),
+								Registry.Stage.LerpColor(Fill, new Vector3(oriPos, scaler)),
 								Sprites[subX, subY, subZ].Rotation,
 								Subtile.Origin,
 								1.0f,
@@ -250,6 +251,39 @@ namespace Foregunners
 				}
 			}
         }
+
+		public static void DrawBG(SpriteBatch batch, int x, int y, int z)
+		{
+			Vector2 basePos = new Vector2(x * FOOT, y * FOOT);
+			basePos += Subtile.Origin;
+
+			Vector2 offset, oriPos;
+
+			float scaler = (z * DEPTH);
+			float depth = Registry.GetDepth(scaler);
+			offset = Vector2.Zero;
+
+			for (int subY = 0; subY < DIVS; subY++)
+			{
+				offset.X = 0;
+				for (int subX = 0; subX < DIVS; subX++)
+				{
+					oriPos = basePos + offset + Registry.Spin * scaler;
+					batch.Draw(
+						Registry.Tilesheet,
+						oriPos,
+						Subtile.Smooth,
+						Registry.Stage.LerpColor(new Color(100, 90, 80), new Vector3(oriPos, scaler)),
+						0.0f,
+						Subtile.Origin,
+						1.0f,
+						SpriteEffects.None,
+						depth);
+					offset.X += Subtile.Quarter;
+				}
+				offset.Y += Subtile.Quarter;
+			}
+		}
     }
 
     public class Slope : Tile

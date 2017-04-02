@@ -10,6 +10,10 @@ namespace Foregunners
 {
     public class Sprite : IVisible
     {
+		// implement factory pattern for array settings - 
+		// either [,,] for stacked complex fl at sprites or 
+		// simply [] for stacks flat sprites 
+
         protected IReal Parent { get; private set; }
         protected List<Rectangle> Textures;
 
@@ -29,20 +33,19 @@ namespace Foregunners
 
         public void Draw(SpriteBatch batch)
         {
-            int gap = 8; // GAP - WRONG
+            int gap = 12; // GAP - WRONG
 
             Vector3 pos = Parent.Position;
             pos.Z -= gap * 2;
-
-            float lerp = new Vector2(pos.X, pos.Y).Length() / (Tile.FOOT * 20);
-
+			
             foreach (Rectangle rect in Textures)
             {
-                batch.Draw(
-                    Registry.Spritesheet,
-                    Registry.CalcRenderPos(pos),
-                    rect,
-                    Color.Lerp(Color.White, Registry.Burn, lerp), Parent.Facing, new Vector2(16),
+				batch.Draw(
+					Registry.Spritesheet,
+					Registry.CalcRenderPos(pos),
+					rect,
+					Registry.Stage.LerpColor(Color.White, Parent.Position), 
+					Parent.Facing, new Vector2(16),
                     2.0f, SpriteEffects.None, Registry.GetDepth(pos.Z));
                 
                 pos.Z += gap; 

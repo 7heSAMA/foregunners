@@ -12,13 +12,17 @@ namespace Foregunners
     public class Level
     {
         protected Tile[,,] Tiles;
+		private int GroundLevel;
 
 		public FollowCin Focus { get; private set; }
 		public LanderCin Intro { get; private set; }
 		public TrackingCin Tracking { get; private set; }
 
+		private List<Vector3> Lights = new List<Vector3>();
+
 		public Level(string map, IServiceProvider serviceProvider)
 		{
+			GroundLevel = 0;
 			LoadTiles(map);
 
 			if (map != "dusk")
@@ -61,8 +65,6 @@ namespace Foregunners
 
 		public TileCollision GetCollision(int x, int y, int z)
 		{
-			int groundLevel = 0;
-
 			if (z < 0)
 				return TileCollision.Solid;
 			else if (z > Depth - 1)
@@ -70,7 +72,7 @@ namespace Foregunners
 
 			else if (x < 0 || x > Width - 1 || y > Height - 1 || y < 0)
 			{
-				if (z < groundLevel)
+				if (z < GroundLevel)
 					return TileCollision.Solid;
 				else
 					return TileCollision.Empty;
@@ -222,7 +224,7 @@ namespace Foregunners
             get { return new Vector2(Width * Tile.FOOT / 2, Height * Tile.FOOT / 2); }
         }
 
-        public virtual void Draw(SpriteBatch spriteBatch)
+        public void Draw(SpriteBatch spriteBatch)
         {
             float angle = -Main.Cam.Rotation - MathHelper.Pi / 2.0f;
             Vector2 spin = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
@@ -230,13 +232,26 @@ namespace Foregunners
             spin *= Cinema.Perspective;
             // TODO: transfer this to a script
             Registry.Spin = spin;
+			
+			for (int z = 0; z < Depth; z++)
+				for (int y = 0; y < Height; y++)
+					for (int x = 0; x < Width; x++)
+					{
+						if (Tiles[x, y, z].Sprites != null)
+							Tiles[x, y, z].Draw(spriteBatch);
 
-            for (int z = 0; z < Depth; z++)
-                for (int y = 0; y < Height; y++)
-                    for (int x = 0; x < Width; x++)
-                        if (Tiles[x, y, z].Sprites != null)
-                            Tiles[x, y, z].Draw(spriteBatch);
-        }
+						if (z == GroundLevel)
+						{
+							Tile.DrawBG(spriteBatch, x, y, z);
+						}
+					}
+		}
+
+		public Color LerpColor(Color color, Vector3 pos)
+		{
+			return Color.Lerp(color, Registry.DarkPurple,
+				1.0f - pos.Z / (Depth * Tile.DEPTH));
+		}
 
 		private void LoadTiles(string mapName)
 		{
@@ -289,8 +304,8 @@ namespace Foregunners
 		private Tile LoadTile(char icon, int x, int y, int z)
 		{
 			Vector3 minCorner = new Vector3(x * Tile.FOOT, y * Tile.FOOT, z * Tile.DEPTH);
-			Color BoneWhite = new Color(180, 170, 160);
-			BoneWhite = Color.Lerp(Color.LightGray, Color.MonoGameOrange, 0.1f);
+			Color BoneWhite = new Color(100, 90, 80);
+			//BoneWhite = Color.Lerp(Color.LightGray, Color.MonoGameOrange, 0.1f);
 
 			switch (icon)
 			{

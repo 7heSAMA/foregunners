@@ -35,21 +35,15 @@ namespace Foregunners
         {
             Tooltip vitals = new Tooltip(this, TextBox.Make("Avatar", Registry.Header));
 
-            vitals.AddEntry(TextBox.Make(this, "Shield", Registry.Body));
-            vitals.AddEntry(TextBox.Make(this, "Armor", Registry.Body));
-            vitals.AddEntry(TextBox.Make(this, "Hull", Registry.Body));
+            vitals.AddEntry(TextBox.Make(this, "Shield", Registry.Body, "Shield: "));
+            vitals.AddEntry(TextBox.Make(this, "Armor", Registry.Body, "Armor: "));
+            vitals.AddEntry(TextBox.Make(this, "Hull", Registry.Body, "Hull: "));
 
             TipSorter.Add(vitals);
         }
         
         protected override void RunLogic(float cycleTime)
         {
-            if (Position.Z > Tile.DEPTH)
-            {
-                Collides = true;
-                Gravitized = true;
-            }
-
             Vector2 accel = Vector2.Zero;
             if (Keyboard.GetState().IsKeyDown(Keys.A))
                 accel.X -= 1.0f;

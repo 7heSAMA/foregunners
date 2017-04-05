@@ -9,7 +9,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Foregunners
 {
-    public abstract class SimFrame : IVisible, ISpatial
+    public abstract class SimFrame : IReal
     {
         #region fields
         protected bool Gravitized { private get; set; } = true;

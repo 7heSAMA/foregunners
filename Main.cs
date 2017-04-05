@@ -22,8 +22,8 @@ namespace Foregunners
         private SpriteBatch Batch;
         
         // should all be moved to registry or something
-        public static Viewport viewport { get; private set; }
-        public static Camera2D Cam { get; private set; }
+        public static Viewport Viewport { get; private set; }
+        //public static Camera2D Cam { get; private set; }
 
         public Main()
         {
@@ -39,9 +39,9 @@ namespace Foregunners
         /// </summary>
         protected override void Initialize()
         {
-            viewport = new Viewport(new Rectangle(0, 0, 960, 540));
-            Graphics.PreferredBackBufferWidth = viewport.Width;
-            Graphics.PreferredBackBufferHeight = viewport.Height;
+			Viewport = new Viewport(new Rectangle(0, 0, 960, 540)); //1366, 768));
+			Graphics.PreferredBackBufferWidth = Viewport.Width;
+            Graphics.PreferredBackBufferHeight = Viewport.Height;
             Graphics.IsFullScreen = false;
             Graphics.ApplyChanges();
 
@@ -55,12 +55,12 @@ namespace Foregunners
         protected override void LoadContent()
         {
             Batch = new SpriteBatch(GraphicsDevice);
-            Cam = new Camera2D(Graphics);
-            
+            //Cam = new Camera2D(Graphics);
+
             Registry.LoadGameServices(GraphicsDevice, Content, Services);
             
             Registry.Stage = 
-                new Level("depot", Services);
+                new Level("arena", Services);
 			Registry.Stage.Initialize();
         }
 
@@ -87,16 +87,6 @@ namespace Foregunners
             TipSorter.Update();
             
             Registry.Update(gameTime);
-            
-            if (Registry.Stage == null)
-            {
-                Registry.Spin = new Vector2(1, 1);
-                Registry.Spin.Normalize();
-
-                Cam.Pos = Vector2.Zero;
-                Cam.Zoom = Vector3.One;
-                Cam.Rotation = 0.0f;
-            }
 
             base.Update(gameTime);
         }
@@ -115,7 +105,7 @@ namespace Foregunners
                     BlendState.AlphaBlend,
                     SamplerState.PointClamp,
                     null, null, null,
-                    Cam.get_transformation(viewport));
+                    Camera2D.get_transformation(Viewport));
             
             // Draw transformed 
             Registry.Draw(Batch);
@@ -129,9 +119,9 @@ namespace Foregunners
             Color trite = Color.Lerp(Color.White, Color.Transparent, 0.5f);
 
             Registry.CenterLine(Batch, 2.0f, trite, new Vector2(0.0f, Registry.MouseV2.Y),
-                new Vector2(viewport.Width, Registry.MouseV2.Y), 0.0f);
+                new Vector2(Viewport.Width, Registry.MouseV2.Y), 0.0f);
             Registry.CenterLine(Batch, 2.0f, trite, new Vector2(Registry.MouseV2.X, 0.0f),
-                new Vector2(Registry.MouseV2.X, viewport.Height), 0.0f);
+                new Vector2(Registry.MouseV2.X, Viewport.Height), 0.0f);
                 
             Batch.End();
             base.Draw(gameTime);

@@ -104,7 +104,7 @@ namespace Foregunners
         public const float LINEWIDTH = 2.0f;
         
         protected List<TextBox> Lines;
-        protected IReal Target;
+        protected IWorld Target;
 
         protected Vector2 TitleSize;
         protected Vector2 BodySize;
@@ -149,7 +149,7 @@ namespace Foregunners
             }
         }
         
-        public Tooltip(IReal target, TextBox title)
+        public Tooltip(IWorld target, TextBox title)
         {
             Target = target;
             Lines = new List<TextBox>();

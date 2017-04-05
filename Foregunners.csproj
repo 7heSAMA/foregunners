@@ -66,10 +66,15 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Scripting\Cinema.cs" />
+    <Compile Include="Scripting\Dialogue.cs" />
+    <Compile Include="Scripting\Scenario.cs" />
+    <Compile Include="Scripting\ScriptRunner.cs" />
+    <Compile Include="Scripting\Tracker.cs" />
+    <Compile Include="Util\YamLoader.cs" />
     <Compile Include="World\Interfaces.cs" />
     <Compile Include="Physics\Manager.cs" />
     <Compile Include="Physics\Particle.cs" />
-    <Compile Include="Scripting\Cinematography.cs" />
     <Compile Include="Scripting\Tooltip.cs" />
     <Compile Include="Units\Beetle.cs" />
     <Compile Include="Units\Dummy.cs" />
@@ -93,8 +98,15 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Xml" />
+    <Reference Include="YamlDotNet, Version=4.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\YamlDotNet.4.1.0\lib\net35\YamlDotNet.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Content\yaml\demo.yaml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Content\Maps\skull\skull0.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -146,42 +158,6 @@
     <None Include="Content\Maps\harbinger\harbinger7.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Content\Maps\jarvis\jarvis0.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Content\Maps\jarvis\jarvis1.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Content\Maps\jarvis\jarvis2.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Content\Maps\jarvis\jarvis3.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Content\Maps\gdw\gdw0.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Content\Maps\gdw\gdw1.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Content\Maps\gdw\gdw2.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Content\Maps\gdw\gdw3.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Content\Maps\gdw\gdw4.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Content\Maps\gdw\gdw5.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Content\Maps\gdw\gdw6.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="Content\Maps\gdw\gdw7.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Include="Content\Maps\depot\depot0.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -191,46 +167,50 @@
     <None Include="Content\Maps\depot\depot2.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Content\Maps\dusk\dusk0.txt">
+    <None Include="Content\Maps\station\station0.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Content\Maps\dusk\dusk1.txt">
+    <None Include="Content\Maps\station\station1.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Content\Maps\drill\drill2.txt">
+    <None Include="Content\Maps\station\station2.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Content\Maps\drill\drill1.txt">
+    <None Include="Content\Maps\station\station3.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Content\Maps\drill\drill0.txt">
+    <None Include="Content\Maps\hills\hills0.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Content\Maps\drill\drill3.txt">
+    <None Include="Content\Maps\hills\hills1.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Content\Maps\drill\drill5.txt">
+    <None Include="Content\Maps\arena\arena0.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Content\Maps\drill\drill9.txt">
+    <None Include="Content\Maps\arena\arena1.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Content\Maps\drill\drill4.txt">
+    <None Include="Content\Maps\arena\arena2.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Content\Maps\drill\drill7.txt">
+    <None Include="Content\Maps\arena\arena3.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Content\Maps\drill\drill8.txt">
+    <None Include="Content\Maps\arena\arena4.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="Content\Maps\drill\drill6.txt">
+    <None Include="Content\Maps\arena\arena5.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <Content Include="Content\sprites1.png" />
     <Content Include="Content\tileset.png" />
     <Content Include="Icon.ico" />
+    <None Include="Content\yaml\demoII.yaml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Foregunners_TemporaryKey.pfx" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <MonoGameContentReference Include="Content\Content.mgcb" />

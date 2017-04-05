@@ -1,0 +1,41 @@
+# Foregunners scenario script files
+# Sid stands for 'script ID' and must be unique
+# All times are measured in seconds
+
+Name: Demo 
+Map: Station
+
+# Default camera values 
+Zoom: 0.5
+Rotation: 0.0
+# Perspective: 1.0
+
+Inject:
+- Rev1
+- Intro
+
+Dialogue:
+- Sid: Rev1
+  Text: Testing YAML and SceneBuilder
+  Inject: 
+  -  Rev2
+- Sid: Rev2
+  Text: We made it this far... 
+  Inject:
+  -  Rev3
+- Sid: Rev3 
+  Text: Let's finish with a bang!
+  
+# Cameras determine the zoom, rotation and perspective of the cam.
+# Leave any value blank to default to the scene or previous cam. 
+
+Cameras:
+- Sid: Intro
+  Zoom: 1.0
+  Rotation: 0.785
+  Perspective: 0.785
+  Time: 10
+  
+Trackers:
+- Sid: FollowAvatar
+  Target: Avatar

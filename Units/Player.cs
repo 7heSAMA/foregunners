@@ -24,21 +24,21 @@ namespace Foregunners
             Active = true;
             Position = pos;
             LastPos = pos;
-            Chassis = new Sprite(this);
 
+            Chassis = new Sprite(this);
             Turret = new TurretMount(this, MunManager.Pulse, 24, 0.1f, 0.05f);
 
-            Tipper2();
+            Tipper();
         }
 
-        private void Tipper2()
+        private void Tipper()
         {
             Tooltip vitals = new Tooltip(this, TextBox.Make("Avatar", Registry.Header));
 
             vitals.AddEntry(TextBox.Make(this, "Shield", Registry.Body, "Shield: "));
             vitals.AddEntry(TextBox.Make(this, "Armor", Registry.Body, "Armor: "));
             vitals.AddEntry(TextBox.Make(this, "Hull", Registry.Body, "Hull: "));
-
+			
             TipSorter.Add(vitals);
         }
         
@@ -54,7 +54,7 @@ namespace Foregunners
             if (Keyboard.GetState().IsKeyDown(Keys.S))
                 accel.Y += 1.0f;
             
-            float angle = (float)Math.Atan2(accel.Y, accel.X) - Main.Cam.Rotation;
+            float angle = (float)Math.Atan2(accel.Y, accel.X) - Camera2D.Rotation;
             
             if (accel != Vector2.Zero && OnGround)
             {

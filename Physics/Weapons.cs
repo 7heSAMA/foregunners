@@ -61,19 +61,6 @@ namespace Foregunners
         }
     }
     
-    public sealed class GrenadeLauncher //: Weapon
-    {
-        public bool Armed { get; private set; }
-
-        public void Sight(Vector3 pos)
-        {
-        }
-
-        // if !armed and leftclick, set target pos 
-        // if armed, elevation 
-        // if armed and !leftmouse, fire 
-    }
-
     public abstract class Weapon
     {
         #region props/fields

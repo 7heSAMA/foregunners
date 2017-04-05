@@ -11,21 +11,22 @@ namespace Foregunners
     public class Sprite : IVisible
     {
 		// implement factory pattern for array settings - 
-		// either [,,] for stacked complex fl at sprites or 
+		// either [,,] for stacked complex flat sprites or 
 		// simply [] for stacks flat sprites 
 
+		public static int Gap = Tile.DEPTH / 6;
         protected IReal Parent { get; private set; }
         protected List<Rectangle> Textures;
 
-        public Sprite(ISpatial parent)
+        public Sprite(IReal parent)
         {
             Parent = parent;
             Textures = new List<Rectangle>();
             for (int i = 0; i < 4; i++)
                 Textures.Add(new Rectangle(i * 32, 0, 32, 32));
         }
-
-        public Sprite(ISpatial parent, List<Rectangle> textures)
+		
+        public Sprite(IReal parent, List<Rectangle> textures)
         {
             Parent = parent;
             Textures = textures;
@@ -33,10 +34,9 @@ namespace Foregunners
 
         public void Draw(SpriteBatch batch)
         {
-            int gap = 12; // GAP - WRONG
-
             Vector3 pos = Parent.Position;
-            pos.Z -= gap * 2;
+			// Position refers to the centerpos so offset
+			pos.Z -= Gap * 2;
 			
             foreach (Rectangle rect in Textures)
             {
@@ -48,7 +48,7 @@ namespace Foregunners
 					Parent.Facing, new Vector2(16),
                     2.0f, SpriteEffects.None, Registry.GetDepth(pos.Z));
                 
-                pos.Z += gap; 
+                pos.Z += Gap; 
             }
         }
     }

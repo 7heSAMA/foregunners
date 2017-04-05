@@ -9,63 +9,50 @@ using Microsoft.Xna.Framework.Media;
 
 namespace Foregunners
 {
-    public class Camera2D 
+    public static class Camera2D
     {
-        GraphicsDeviceManager m_GraphicsDeviceManager; 
-        
-        protected Vector3 _zoom;
-        public Matrix _transform; // Matrix Transform
-        public Vector2 _pos; // Camera Position
-        protected float _rotation; // Camera Rotation
+		public static float _zoom = 1.0f;
+		public static float _perspective = 0.0f;
+        private static float _rotation = MathHelper.Pi / 4.0f;
+		private static Vector2 _pos = Vector2.Zero;
+        private static Matrix _transform;
 
-        public Camera2D(GraphicsDeviceManager graphicsDeviceManager)
-        {
-            m_GraphicsDeviceManager = graphicsDeviceManager;
-            _zoom = Vector3.One;//1.0f;
-            _rotation = 0.0f;
-            _pos = Vector2.Zero;
-        }
-        
-        // Gets and sets zoom
-        public Vector3 Zoom
-        {
-            get { return _zoom; }
-            set
-            {
-                _zoom = value;
-                if (_zoom.X < 0.1f) _zoom.X = 0.1f;
-                if (_zoom.Y < 0.1f) _zoom.Y = 0.1f;
-                if (_zoom.Z < 0.1f) _zoom.Z = 0.1f;
-            }
-        }
+		public static float Perspective
+		{
+			get { return _perspective; }
+			set { _perspective = MathHelper.Clamp(value, 0.0f, MathHelper.Pi / 4.0f); }
+		}
 
-        // Gets and sets rotation
-        public float Rotation
-        {
-            get { return _rotation; }
-            set { _rotation = value; }
-        }
+		// TODO: add method to change rotation by degrees
+		public static float Rotation
+		{
+			get { return _rotation; }
+			set { _rotation = Gizmo.WrapAngle(value); }
+		}
 
-        // Auxiliary function to move the camera
-        public void Move(Vector2 amount)
-        {
-            _pos += amount;
-        }
+		public static float Zoom
+		{
+			get { return _zoom; }
+			set { _zoom = MathHelper.Clamp(value, 0.25f, 1.0f); }
+		}
 
-        // Gets and sets position
-        public Vector2 Pos
-        {
-            get { return _pos; }
-            set { _pos = value; }
-        }
+		public static Vector3 Lens()
+		{
+			return new Vector3(Zoom, Zoom * (float)Math.Cos(Perspective), 1.0f);
+		}
+		
+		public static Vector2 Pos
+		{
+			get { return _pos; }
+			set { _pos = value; }
+		}
 
-        public Matrix get_transformation(Viewport viewport)
+        public static Matrix get_transformation(Viewport viewport)
         {
-            //Viewport viewport = graphics.GraphicsDevice.Viewport;
             _transform =       // Thanks to o KB o for this solution
               Matrix.CreateTranslation(new Vector3(-_pos.X, -_pos.Y, 0)) *
                                          Matrix.CreateRotationZ(Rotation) *
-                                         Matrix.CreateScale(_zoom) * 
+                                         Matrix.CreateScale(Lens()) * 
                                          Matrix.CreateTranslation(new Vector3(viewport.Width * 0.5f, 
                                              viewport.Height * 0.5f, 0));
             return _transform;

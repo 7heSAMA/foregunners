@@ -10,20 +10,6 @@ namespace Foregunners
 {
     public static class Gizmo
     {
-        public enum Side
-        {
-            Low = -1,
-            Mid = 0,
-            High = 1,
-        }
-
-        public enum Axis
-        {
-            X = 0,
-            Y = 1,
-            Z = 2,
-        }
-
         private static Random RNG;
 
         static Gizmo()

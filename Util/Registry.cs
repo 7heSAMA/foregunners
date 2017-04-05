@@ -24,8 +24,8 @@ namespace Foregunners
         public const float TargetCycle = 1.0f / 60.0f;
 
         public static Level Stage;
-        public static GameTime gameTime;
         public static float cycleTime;
+		public static double Seconds;
 
         private static GraphicsDevice Graphics;
         private static ContentManager Content;
@@ -39,12 +39,11 @@ namespace Foregunners
         public static SpriteFont Header, Body, Flobots;
 
         public static Player Avatar;
+		public static ScriptRunner Runner;
 
         public static KeyboardState LastKeyboard { get; private set; }
         public static MouseState LastMouse { get; private set; }
         public static bool Debug { get; private set; }
-
-        public static List<IScript> Scripts;
 		
         public static Color BoneWhite = Color.Lerp(Color.LightGray, Color.MonoGameOrange, 0.1f);
         public static Color DarkPurple = new Color(24, 8, 18);
@@ -53,10 +52,12 @@ namespace Foregunners
         public static void LoadGameServices(
             GraphicsDevice graphics, ContentManager content, GameServiceContainer services)
         {
+			Seconds = 0.0f;
+
             Graphics = graphics;
             Content = content;
             Services = services;
-
+			
             Points = new List<Vector3>();
 
             RNG = new Random();
@@ -72,7 +73,7 @@ namespace Foregunners
             Managers.Add(UnitMan);
             Managers.Add(MunMan);
 
-            Scripts = new List<IScript>();
+			Runner = new ScriptRunner();
 
             Header = Content.Load<SpriteFont>("Header");
             Body = Content.Load<SpriteFont>("Body");
@@ -103,9 +104,9 @@ namespace Foregunners
             Triangle.SetData(triColors, 0, Tile.FOOT * Tile.FOOT);
         }
         
-        public static void Update(GameTime gt)
+        public static void Update(GameTime gameTime)
         {
-            gameTime = gt;
+			Seconds = gameTime.TotalGameTime.TotalSeconds;
             cycleTime = (float)gameTime.ElapsedGameTime.TotalSeconds / (1.0f / 60.0f);
             MouseV2 = new Vector2(Mouse.GetState().X, Mouse.GetState().Y);
             MouseCast = CastMouseToWorld();
@@ -119,8 +120,7 @@ namespace Foregunners
             foreach (IManager man in Managers)
                 man.RunSim(cycleTime);
 
-            foreach (IScript script in Scripts)
-                script.Update();
+			Runner.Update();
 
             LastKeyboard = Keyboard.GetState();
             LastMouse = Mouse.GetState();
@@ -136,7 +136,7 @@ namespace Foregunners
         public static float GetDepth(float z)
         {
             if (Stage != null)
-                return 1.0f - z / (Stage.Depth * Tile.DEPTH);
+                return 1.0f - z / (2 * Stage.Depth * Tile.DEPTH);
             else
                 return 1.0f - z / (4 * Tile.DEPTH);
         }
@@ -169,22 +169,23 @@ namespace Foregunners
 	
         public static Vector2 WorldOnOverlay(Vector3 pos)
         {
-            Vector2 flatPos = new Vector2(pos.X, pos.Y) - Main.Cam.Pos;
+            Vector2 flatPos = new Vector2(pos.X, pos.Y) - Camera2D.Pos;
             
-            float angle = (float)Math.Atan2(flatPos.Y, flatPos.X) + Cinema.Rotation;
+            float angle = (float)Math.Atan2(flatPos.Y, flatPos.X) + Camera2D.Rotation;
             float len = flatPos.Length();
 
             flatPos = new Vector2(
                 (float)Math.Cos(angle),
                 (float)Math.Sin(angle)) * len;
+
+			Vector3 lens = Camera2D.Lens();
+			flatPos.X *= lens.X;
+			flatPos.Y *= lens.Y;
+
+			flatPos.Y -= Camera2D.Perspective * pos.Z;
             
-            flatPos.X *= Main.Cam.Zoom.X;
-            flatPos.Y *= Main.Cam.Zoom.Y;
-            
-            flatPos.Y -= Cinema.Perspective * pos.Z;
-            
-            flatPos.X += Main.viewport.Width / 2;
-            flatPos.Y += Main.viewport.Height / 2;
+            flatPos.X += Main.Viewport.Width / 2;
+            flatPos.Y += Main.Viewport.Height / 2;
 
             flatPos.X = (int)Math.Floor(flatPos.X);
             flatPos.Y = (int)Math.Floor(flatPos.Y);
@@ -200,20 +201,22 @@ namespace Foregunners
         public static Vector3 OverlayToWorld(Point screen, float z = 0.0f)
         {
             Vector2 pos = new Vector2(
-                screen.X - Main.viewport.Width / 2,
-                screen.Y - Main.viewport.Height / 2);
+                screen.X - Main.Viewport.Width / 2,
+                screen.Y - Main.Viewport.Height / 2);
 
-            pos.X /= Main.Cam.Zoom.X;
-            pos.Y /= Main.Cam.Zoom.Y;
+			Vector3 lens = Camera2D.Lens();
+
+			pos.X /= lens.X;//Camera2D.Zoom.X;
+			pos.Y /= lens.X;// Camera2D.Zoom.Y;
             
-            float angle = (float)Math.Atan2(pos.Y, pos.X) - Cinema.Rotation;
+            float angle = (float)Math.Atan2(pos.Y, pos.X) - Camera2D.Rotation;
             float length = pos.Length();
             
             pos = new Vector2(
                 (float)Math.Cos(angle) * length,
                 (float)Math.Sin(angle) * length);
 
-            pos += Main.Cam.Pos;
+            pos += Camera2D.Pos;
 
             return new Vector3(pos, z);
         }
@@ -224,10 +227,10 @@ namespace Foregunners
                 return OverlayToWorld(Mouse.GetState().Position);
             else
             {
-                float xyMag = (float)Math.Sin(Cinema.Perspective) * 0.785f;
-                float zMag = (float)Math.Cos(Cinema.Perspective);
+                float xyMag = (float)Math.Sin(Camera2D.Perspective) * 0.785f;
+                float zMag = (float)Math.Cos(Camera2D.Perspective);
 
-                float rotation = -Cinema.Rotation + MathHelper.Pi / 2.0f;
+                float rotation = -Camera2D.Rotation + MathHelper.Pi / 2.0f;
                 float x = (float)Math.Cos(rotation);
                 float y = (float)Math.Sin(rotation);
 

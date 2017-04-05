@@ -14,9 +14,9 @@ namespace Foregunners
         protected Tile[,,] Tiles;
 		private int GroundLevel;
 
-		public FollowCin Focus { get; private set; }
-		public LanderCin Intro { get; private set; }
-		public TrackingCin Tracking { get; private set; }
+		//public CinFollow Focus { get; private set; }
+		//public CinLander Intro { get; private set; }
+		//public CinTracking Tracking { get; private set; }
 
 		private List<Vector3> Lights = new List<Vector3>();
 
@@ -25,15 +25,20 @@ namespace Foregunners
 			GroundLevel = 0;
 			LoadTiles(map);
 
+			Camera2D.Pos = new Vector2(Width * Tile.FOOT / 2, Height * Tile.FOOT / 2);
+
 			if (map != "dusk")
 			{
-				Intro = new LanderCin();
-				Focus = new FollowCin(Registry.Avatar, true);
-				Tracking = new TrackingCin(Registry.Avatar);
+				//Intro = new CinLander();
+				//Focus = new CinFollow(Registry.Avatar, true);
+				//Tracking = new CinTracking(Registry.Avatar);
 
-				Registry.Scripts.Add(Intro);
-				Registry.Scripts.Add(Focus);
-				Registry.Scripts.Add(Tracking);
+				//Registry.Scripts.Add(Intro);
+				//Registry.Scripts.Add(Focus);
+				//Registry.Scripts.Add(Tracking);
+
+				Scenario scene = YamLoader.Load<Scenario>("Content/yaml/demoII.yaml");
+				Registry.Runner.BuildScene(scene);
 			}
 
 			if (map == "harbinger")
@@ -81,7 +86,7 @@ namespace Foregunners
 				return Tiles[x, y, z].Collision;
 		}
 
-		public SeamStyle GetStyle(Vector3 pos)
+		public TileStyle GetStyle(Vector3 pos)
 		{
 			return GetStyle(
 				Tile.GetArrayXY(pos.X), 
@@ -89,10 +94,10 @@ namespace Foregunners
 				Tile.GetArrayZ(pos.Z));
 		}
 
-		public SeamStyle GetStyle(int x, int y, int z)
+		public TileStyle GetStyle(int x, int y, int z)
         {
             if (x < 0 || x >= Width || y < 0 || y >= Height || z < 0 || z >= Depth)
-                return SeamStyle.None;
+                return TileStyle.None;
 
             return Tiles[x, y, z].Style;
         }
@@ -110,12 +115,12 @@ namespace Foregunners
 				// if this is a platform under another slope, 
 				// return that slope's height 
                 if (GetCollision(x, y, z + 1) == TileCollision.Slope)
-                    return (Tiles[x, y, z + 1] as Slope).GetHeight(pos);
+                    return (Tiles[x, y, z + 1] as TileSlope).GetHeight(pos);
                 else
                     return (z + 1) * Tile.DEPTH;
             }
             else
-                return (Tiles[x, y, z] as Slope).GetHeight(pos);
+                return (Tiles[x, y, z] as TileSlope).GetHeight(pos);
         }
 
         /// <summary>
@@ -161,25 +166,25 @@ namespace Foregunners
 						if (Tiles[x, y, z].Sprites == null)
 							continue;
 
-                        Neighbors hood = Neighbors.None;
-						SeamStyle style = Tiles[x, y, z].Style;
+                        TileNeighbors hood = TileNeighbors.None;
+						TileStyle style = Tiles[x, y, z].Style;
 						
-						if ((GetStyle(x - 1, y - 1, z) & style) != SeamStyle.None)
-							hood = hood | Neighbors.TopLeft;
-						if ((GetStyle(x, y - 1, z) & style) != SeamStyle.None)
-							hood = hood | Neighbors.TopCenter;
-						if ((GetStyle(x + 1, y - 1, z) & style) != SeamStyle.None)
-							hood = hood | Neighbors.TopRight;
-						if ((GetStyle(x - 1, y, z) & style) != SeamStyle.None)
-							hood = hood | Neighbors.CenterLeft;
-						if ((GetStyle(x + 1, y, z) & style) != SeamStyle.None)
-							hood = hood | Neighbors.CenterRight;
-						if ((GetStyle(x - 1, y + 1, z) & style) != SeamStyle.None)
-							hood = hood | Neighbors.BottomLeft;
-						if ((GetStyle(x, y + 1, z) & style) != SeamStyle.None)
-							hood = hood | Neighbors.BottomCenter;
-						if ((GetStyle(x + 1, y + 1, z) & style) != SeamStyle.None)
-							hood = hood | Neighbors.BottomRight;
+						if ((GetStyle(x - 1, y - 1, z) & style) != TileStyle.None)
+							hood = hood | TileNeighbors.TopLeft;
+						if ((GetStyle(x, y - 1, z) & style) != TileStyle.None)
+							hood = hood | TileNeighbors.TopCenter;
+						if ((GetStyle(x + 1, y - 1, z) & style) != TileStyle.None)
+							hood = hood | TileNeighbors.TopRight;
+						if ((GetStyle(x - 1, y, z) & style) != TileStyle.None)
+							hood = hood | TileNeighbors.CenterLeft;
+						if ((GetStyle(x + 1, y, z) & style) != TileStyle.None)
+							hood = hood | TileNeighbors.CenterRight;
+						if ((GetStyle(x - 1, y + 1, z) & style) != TileStyle.None)
+							hood = hood | TileNeighbors.BottomLeft;
+						if ((GetStyle(x, y + 1, z) & style) != TileStyle.None)
+							hood = hood | TileNeighbors.BottomCenter;
+						if ((GetStyle(x + 1, y + 1, z) & style) != TileStyle.None)
+							hood = hood | TileNeighbors.BottomRight;
 						
 						Tiles[x, y, z].LoadContextualSource(hood);
                     }
@@ -202,7 +207,7 @@ namespace Foregunners
                     int y = Tile.GetArrayXY(mouse.Y);
                     int z = Tile.GetArrayZ(mouse.Z);
 
-                    float height = ((Slope)Tiles[x, y, z]).GetHeight(mouse) % Tile.DEPTH;
+                    float height = ((TileSlope)Tiles[x, y, z]).GetHeight(mouse) % Tile.DEPTH;
                     
                     Vector3 multipled = new Vector3(dir.X, dir.Y, 0.0f);
                     multipled *= (height / Tile.DEPTH);
@@ -226,24 +231,49 @@ namespace Foregunners
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            float angle = -Main.Cam.Rotation - MathHelper.Pi / 2.0f;
+            float angle = -Camera2D.Rotation - MathHelper.Pi / 2.0f;
             Vector2 spin = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
             
-            spin *= Cinema.Perspective;
+            spin *= Camera2D.Perspective;
             // TODO: transfer this to a script
             Registry.Spin = spin;
+
+			Vector3 topLeft = Registry.OverlayToWorld(new Point(0, 0));
+			Vector3 topRight = Registry.OverlayToWorld(new Point(Main.Viewport.Width, 0));
+			Vector3 botLeft = Registry.OverlayToWorld(new Point(0, Main.Viewport.Height));
+			Vector3 botRight = Registry.OverlayToWorld(new Point(Main.Viewport.Width, Main.Viewport.Height));
+
+			int xStart = Tile.GetArrayXY(Math.Min(
+				Math.Min(topLeft.X, topRight.X), Math.Min(botLeft.X, botRight.X))) - 2;
+			int xEnd = Tile.GetArrayXY(Math.Max(
+				Math.Max(topLeft.X, topRight.X), Math.Max(botLeft.X, botRight.X))) + 2;
+
+			if (xStart < 0)
+				xStart = 0;
+			if (xEnd > Width)
+				xEnd = Width;
+
+			int yStart = Tile.GetArrayXY(Math.Min(
+				Math.Min(topLeft.Y, topRight.Y), Math.Min(botLeft.Y, botRight.Y))) - 2;
+			int yEnd = Tile.GetArrayXY(Math.Max(
+				Math.Max(topLeft.Y, topRight.Y), Math.Max(botLeft.Y, botRight.Y))) + 2;
+
+			if (yStart < 0)
+				yStart = 0;
+			if (yEnd > Height)
+				yEnd = Height;
 			
 			for (int z = 0; z < Depth; z++)
-				for (int y = 0; y < Height; y++)
-					for (int x = 0; x < Width; x++)
+				for (int y = yStart; y < yEnd; y++)
+					for (int x = xStart; x < xEnd; x++)
 					{
 						if (Tiles[x, y, z].Sprites != null)
+						{
 							Tiles[x, y, z].Draw(spriteBatch);
+						}
 
 						if (z == GroundLevel)
-						{
 							Tile.DrawBG(spriteBatch, x, y, z);
-						}
 					}
 		}
 
@@ -258,7 +288,7 @@ namespace Foregunners
 			int i = 0;
 			string root = "Content/Maps/" + mapName + "/";
 			string path = root + mapName + i + ".txt";
-			List<String> paths = new List<string>();
+			List<string> paths = new List<string>();
 
 			Console.WriteLine("populating paths");
 
@@ -271,7 +301,7 @@ namespace Foregunners
 			for (int z = 0; z < paths.Count; z++)
 			{
 				int width;
-				List<String> Lines = new List<string>();
+				List<string> Lines = new List<string>();
 
 				using (System.IO.StreamReader reader = new System.IO.StreamReader(paths[z]))
 				{
@@ -310,34 +340,35 @@ namespace Foregunners
 			switch (icon)
 			{
 				case '.':
+				case '-':
 					return new Tile();
 
 				case '#':
 				case '_':
 				case '"':
 				case '~':
-					return new Tile(minCorner, TileCollision.Solid, SeamStyle.Flat, BoneWhite);
+					return new Tile(minCorner, TileCollision.Solid, TileStyle.Flat, BoneWhite);
 
 				case '0':
 				case 'T':
-					return new Tile(minCorner, TileCollision.Landing, SeamStyle.Flat | SeamStyle.Slope, BoneWhite);
+					return new Tile(minCorner, TileCollision.Landing, TileStyle.Flat | TileStyle.Slope, BoneWhite);
 					
 				case '1':
-					return new Slope(minCorner, new Point(1, -1), SeamStyle.Slope, BoneWhite);
+					return new TileSlope(minCorner, new Point(1, -1), TileStyle.Slope, BoneWhite);
 				case '2':
-					return new Slope(minCorner, new Point(1, 0), SeamStyle.Slope, BoneWhite);
+					return new TileSlope(minCorner, new Point(1, 0), TileStyle.Slope, BoneWhite);
 				case '3':
-					return new Slope(minCorner, new Point(1, 1), SeamStyle.Slope, BoneWhite);
+					return new TileSlope(minCorner, new Point(1, 1), TileStyle.Slope, BoneWhite);
 				case '4':
-					return new Slope(minCorner, new Point(0, 1), SeamStyle.Slope, BoneWhite);
+					return new TileSlope(minCorner, new Point(0, 1), TileStyle.Slope, BoneWhite);
 				case '5':
-					return new Slope(minCorner, new Point(-1, 1), SeamStyle.Slope, BoneWhite);
+					return new TileSlope(minCorner, new Point(-1, 1), TileStyle.Slope, BoneWhite);
 				case '6':
-					return new Slope(minCorner, new Point(-1, 0), SeamStyle.Slope, BoneWhite);
+					return new TileSlope(minCorner, new Point(-1, 0), TileStyle.Slope, BoneWhite);
 				case '7':
-					return new Slope(minCorner, new Point(-1, -1), SeamStyle.Slope, BoneWhite);
+					return new TileSlope(minCorner, new Point(-1, -1), TileStyle.Slope, BoneWhite);
 				case '8':
-					return new Slope(minCorner, new Point(0, -1), SeamStyle.Slope, BoneWhite);
+					return new TileSlope(minCorner, new Point(0, -1), TileStyle.Slope, BoneWhite);
 					
 				case '@':
 					Player player = new Player(minCorner + new Vector3(Tile.Origin, Tile.DEPTH));

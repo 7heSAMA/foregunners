@@ -10,14 +10,6 @@ namespace Foregunners
 {
     public abstract class Unit : SimFrame
     {
-		public enum Tag
-		{
-			OSO,
-			JKL,
-			WSL,
-			LYNX,
-		}
-
 		public string Name { get; protected set; }
 
         public int Hull { get; protected set; }

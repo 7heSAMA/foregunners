@@ -10,10 +10,15 @@ namespace Foregunners
 {
     public interface IScript
     {
-        //bool Active { get; }
-        //bool Running { get; }
-		
-        void Update();
+		string Sid { get; }
+		bool Repeat { get; }
+		bool Active { get; }
+
+		List<string> InjectOnFinish { get; }
+
+		void Setup();
+		void Update();
+		void Shutdown();
     }
 	
     /// <summary>
@@ -42,14 +47,5 @@ namespace Foregunners
     {
         bool Active { get; }
         float Facing { get; }
-    }
-	
-    /// <summary>
-    /// Has Pos and Bounds properties.
-    /// </summary>
-    public interface ISpatial : IReal
-    {
-        int Foot { get; }
-        int Depth { get; }
     }
 }

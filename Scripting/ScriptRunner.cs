@@ -18,11 +18,11 @@ namespace Foregunners
 		public void BuildScene(Scenario scene)
 		{
 			if (scene.Zoom != 0.0f)
-				Camera2D.Zoom = scene.Zoom;
+				Camera.Zoom = scene.Zoom;
 			if (scene.Rotation != 0.0f)
-				Camera2D.Rotation = scene.Rotation;
-			if (scene.Perspective != 0.0f)
-				Camera2D.Perspective = scene.Perspective;
+				Camera.Rotation = scene.Rotation;
+			//if (scene.Perspective != 0.0f)
+			//	Camera.Perspective = scene.Perspective;
 
 			ScBasic temp;
 

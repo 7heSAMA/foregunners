@@ -126,22 +126,6 @@ namespace Foregunners
             LastMouse = Mouse.GetState();
         }
         
-        #region Render Calculations
-        public static Vector2 CalcRenderPos(Vector3 pos)
-        { return new Vector2(pos.X, pos.Y) + Spin * pos.Z; }
-
-        public static Vector2 CalcRenderPos(float x, float y, float z)
-        { return new Vector2(x, y) + Spin * z; }
-
-        public static float GetDepth(float z)
-        {
-            if (Stage != null)
-                return 1.0f - z / (2 * Stage.Depth * Tile.DEPTH);
-            else
-                return 1.0f - z / (4 * Tile.DEPTH);
-        }
-        #endregion
-
         public static bool KeyJustPressed(Keys key)
         {
             if (LastKeyboard.IsKeyUp(key) && Keyboard.GetState().IsKeyDown(key))
@@ -166,24 +150,38 @@ namespace Foregunners
             else
                 return false;
         }
-	
-        public static Vector2 WorldOnOverlay(Vector3 pos)
+
+		#region Render Calculations
+		public static Vector2 CalcRenderPos(Vector3 pos)
+		{ return new Vector2(pos.X, pos.Y) + Spin * pos.Z; }
+
+		public static Vector2 CalcRenderPos(float x, float y, float z)
+		{ return new Vector2(x, y) + Spin * z; }
+
+		public static float GetDepth(float z)
+		{
+			if (Stage != null)
+				return 1.0f - z / (2 * Stage.Depth * Tile.DEPTH);
+			else
+				return 1.0f - z / (4 * Tile.DEPTH);
+		}
+		#endregion
+
+		public static Vector2 WorldOnOverlay(Vector3 pos)
         {
-            Vector2 flatPos = new Vector2(pos.X, pos.Y) - Camera2D.Pos;
+            Vector2 flatPos = new Vector2(pos.X, pos.Y) - Camera.Pos;
             
-            float angle = (float)Math.Atan2(flatPos.Y, flatPos.X) + Camera2D.Rotation;
+            float angle = (float)Math.Atan2(flatPos.Y, flatPos.X) + Camera.Rotation;
             float len = flatPos.Length();
 
             flatPos = new Vector2(
                 (float)Math.Cos(angle),
                 (float)Math.Sin(angle)) * len;
+			
+			// Equivalent of multiplying sprite offset by Z
+			flatPos.Y -= pos.Z * (float)Math.Cos(Camera.Perspective);
+			flatPos *= Camera.Zoom;
 
-			Vector3 lens = Camera2D.Lens();
-			flatPos.X *= lens.X;
-			flatPos.Y *= lens.Y;
-
-			flatPos.Y -= Camera2D.Perspective * pos.Z;
-            
             flatPos.X += Main.Viewport.Width / 2;
             flatPos.Y += Main.Viewport.Height / 2;
 
@@ -204,19 +202,20 @@ namespace Foregunners
                 screen.X - Main.Viewport.Width / 2,
                 screen.Y - Main.Viewport.Height / 2);
 
-			Vector3 lens = Camera2D.Lens();
+			Vector3 lens = Camera.Lens();
 
-			pos.X /= lens.X;//Camera2D.Zoom.X;
-			pos.Y /= lens.X;// Camera2D.Zoom.Y;
+			pos.X /= lens.X;
+			pos.Y /= lens.X;
             
-            float angle = (float)Math.Atan2(pos.Y, pos.X) - Camera2D.Rotation;
+            float angle = (float)Math.Atan2(pos.Y, pos.X) - Camera.Rotation;
             float length = pos.Length();
             
             pos = new Vector2(
                 (float)Math.Cos(angle) * length,
-                (float)Math.Sin(angle) * length);
+                (float)Math.Sin(angle) * length);	// TODO: fix this shit, too 
+													// think I'll have to divide by Cos(Perspective) or similar 
 
-            pos += Camera2D.Pos;
+            pos += Camera.Pos;
 
             return new Vector3(pos, z);
         }
@@ -227,10 +226,10 @@ namespace Foregunners
                 return OverlayToWorld(Mouse.GetState().Position);
             else
             {
-                float xyMag = (float)Math.Sin(Camera2D.Perspective) * 0.785f;
-                float zMag = (float)Math.Cos(Camera2D.Perspective);
+                float xyMag = (float)Math.Sin(Camera.Perspective) * 0.785f; // TODO: fix this shit
+                float zMag = (float)Math.Cos(Camera.Perspective);
 
-                float rotation = -Camera2D.Rotation + MathHelper.Pi / 2.0f;
+                float rotation = -Camera.Rotation + MathHelper.Pi / 2.0f;
                 float x = (float)Math.Cos(rotation);
                 float y = (float)Math.Sin(rotation);
 
@@ -243,7 +242,10 @@ namespace Foregunners
 
         public static void Draw(SpriteBatch spriteBatch)
         {
-            if (Stage != null)
+			float angle = -Camera.Rotation - MathHelper.Pi / 2.0f;
+			Spin = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
+			
+			if (Stage != null)
                 Stage.Draw(spriteBatch);
             foreach (IManager man in Managers)
                 man.DrawSprites(spriteBatch);

@@ -11,6 +11,9 @@ namespace Foregunners
 		protected float Perspective { get; set; } = 0.0f;
 		protected float Time { get; set; } = 0.0f;
 
+		protected float StartZoom { get; set; }
+		protected float StartRot { get; set; }
+		protected float StartPers { get; set; }
 		protected double StartTime { get; set; }
 
 		public class Data : DataBasic
@@ -32,6 +35,9 @@ namespace Foregunners
 
 		public override void Setup()
 		{
+			StartZoom = Camera.Zoom;
+			StartRot = Camera.Rotation;
+			StartPers = Camera.Perspective;
 			StartTime = Registry.Seconds;
 		}
 
@@ -41,11 +47,11 @@ namespace Foregunners
 			Console.WriteLine(percent);
 			
 			if (Zoom != 0.0f)
-				Camera2D.Zoom = MathHelper.SmoothStep(Camera2D.Zoom, Zoom, 0.075f);
+				Camera.Zoom = MathHelper.SmoothStep(StartZoom, Zoom, percent);
 			if (Rotation != 0.0f)
-				Camera2D.Rotation = MathHelper.SmoothStep(Camera2D.Rotation, Rotation, 0.075f);
+				Camera.Rotation = MathHelper.SmoothStep(StartRot, Rotation, percent);
 			if (Perspective != 0.0f)
-				Camera2D.Perspective = MathHelper.SmoothStep(Camera2D.Perspective, Perspective, 0.075f);
+				Camera.Perspective = MathHelper.SmoothStep(StartPers, Perspective, percent);
 			
 			if (percent > 1.0f)
 				Shutdown();

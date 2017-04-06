@@ -55,12 +55,10 @@ namespace Foregunners
         protected override void LoadContent()
         {
             Batch = new SpriteBatch(GraphicsDevice);
-            //Cam = new Camera2D(Graphics);
 
             Registry.LoadGameServices(GraphicsDevice, Content, Services);
             
-            Registry.Stage = 
-                new Level("arena", Services);
+            Registry.Stage = new Level("arena", Services);
 			Registry.Stage.Initialize();
         }
 
@@ -83,7 +81,9 @@ namespace Foregunners
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || 
                 Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
-            
+
+			Camera.Pos = new Vector2(Registry.Avatar.Position.X, Registry.Avatar.Position.Y);
+
             TipSorter.Update();
             
             Registry.Update(gameTime);
@@ -105,7 +105,7 @@ namespace Foregunners
                     BlendState.AlphaBlend,
                     SamplerState.PointClamp,
                     null, null, null,
-                    Camera2D.get_transformation(Viewport));
+                    Camera.get_transformation(Viewport));
             
             // Draw transformed 
             Registry.Draw(Batch);
@@ -120,8 +120,8 @@ namespace Foregunners
 
             Registry.CenterLine(Batch, 2.0f, trite, new Vector2(0.0f, Registry.MouseV2.Y),
                 new Vector2(Viewport.Width, Registry.MouseV2.Y), 0.0f);
-            Registry.CenterLine(Batch, 2.0f, trite, new Vector2(Registry.MouseV2.X, 0.0f),
-                new Vector2(Registry.MouseV2.X, Viewport.Height), 0.0f);
+			Registry.CenterLine(Batch, 2.0f, trite, new Vector2(Registry.MouseV2.X, 0.0f),
+				new Vector2(Registry.MouseV2.X, Viewport.Height), 0.0f);
                 
             Batch.End();
             base.Draw(gameTime);

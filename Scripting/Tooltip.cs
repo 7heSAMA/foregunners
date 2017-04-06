@@ -182,15 +182,11 @@ namespace Foregunners
 
         public void Update()
         {
-            Bulb = Registry.WorldOnOverlay(Target.Position);
-            Recalc(); 
-
             if (Registry.LeftClick() && Bounds.Contains(Registry.MouseV2))
             {
                 Dropdown = !Dropdown;
                 for (int i = 1; i < Lines.Count; i++)
                     Lines[i].Toggle();
-                Recalc();
             }
         }
 
@@ -204,8 +200,12 @@ namespace Foregunners
         }
 
         public void Draw(SpriteBatch batch)
-        {
-            if (Registry.Debug)
+		{
+			Bulb = Registry.WorldOnOverlay(Target.Position);
+			Recalc();
+
+			// draw bounding box for gui checks 
+			if (Registry.Debug)
                 Registry.DrawQuad(batch, new Vector2(Bounds.X, Bounds.Y), 
                     Color.Red, 0.0f, new Vector2(Bounds.Width, Bounds.Height), 0.0f, false);
 
@@ -217,10 +217,7 @@ namespace Foregunners
 
             // draw text 
             Vector2 pos = ScreenPos;
-
-            int limit = 1;
-            if (Dropdown)
-                limit = Lines.Count;
+			int limit = Dropdown ? Lines.Count : 1;
 
             for (int i = 0; i < limit; i++)
             {

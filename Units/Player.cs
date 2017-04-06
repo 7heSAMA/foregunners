@@ -54,7 +54,7 @@ namespace Foregunners
             if (Keyboard.GetState().IsKeyDown(Keys.S))
                 accel.Y += 1.0f;
             
-            float angle = (float)Math.Atan2(accel.Y, accel.X) - Camera2D.Rotation;
+            float angle = (float)Math.Atan2(accel.Y, accel.X) - Camera.Rotation;
             
             if (accel != Vector2.Zero && OnGround)
             {

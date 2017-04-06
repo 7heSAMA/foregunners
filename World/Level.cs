@@ -14,48 +14,19 @@ namespace Foregunners
         protected Tile[,,] Tiles;
 		private int GroundLevel;
 
-		//public CinFollow Focus { get; private set; }
-		//public CinLander Intro { get; private set; }
-		//public CinTracking Tracking { get; private set; }
-
 		private List<Vector3> Lights = new List<Vector3>();
 
 		public Level(string map, IServiceProvider serviceProvider)
 		{
 			GroundLevel = 0;
 			LoadTiles(map);
-
-			Camera2D.Pos = new Vector2(Width * Tile.FOOT / 2, Height * Tile.FOOT / 2);
-
-			if (map != "dusk")
-			{
-				//Intro = new CinLander();
-				//Focus = new CinFollow(Registry.Avatar, true);
-				//Tracking = new CinTracking(Registry.Avatar);
-
-				//Registry.Scripts.Add(Intro);
-				//Registry.Scripts.Add(Focus);
-				//Registry.Scripts.Add(Tracking);
-
-				Scenario scene = YamLoader.Load<Scenario>("Content/yaml/demoII.yaml");
-				Registry.Runner.BuildScene(scene);
-			}
-
-			if (map == "harbinger")
-			{
-				List<Tile> hide = new List<Tile>();
-				for (int y = 11; y < 21; y++)
-					for (int x = 17; x < 24; x++)
-						hide.Add(Tiles[x, y, Depth - 2]);
-				Rectangle area = new Rectangle(15 * Tile.FOOT, 11 * Tile.FOOT,
-					9 * Tile.FOOT, 10 * Tile.FOOT);
-			}
+			
+			Scenario scene = YamLoader.Load<Scenario>("Content/yaml/demoII.yaml");
+			Registry.Runner.BuildScene(scene);
 		}
 
 		public void Initialize()
 		{
-			// Moved because Incline LoadContextualSource
-			// needed to be able to access the map through registry
 			LoadContextSource();
 		}
 
@@ -231,12 +202,12 @@ namespace Foregunners
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            float angle = -Camera2D.Rotation - MathHelper.Pi / 2.0f;
+            /*float angle = -Camera.Rotation - MathHelper.Pi / 2.0f;
             Vector2 spin = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
             
-            spin *= Camera2D.Perspective;
+            spin *= (float)Math.Sin(Camera.Perspective);
             // TODO: transfer this to a script
-            Registry.Spin = spin;
+            Registry.Spin = spin;*/
 
 			Vector3 topLeft = Registry.OverlayToWorld(new Point(0, 0));
 			Vector3 topRight = Registry.OverlayToWorld(new Point(Main.Viewport.Width, 0));

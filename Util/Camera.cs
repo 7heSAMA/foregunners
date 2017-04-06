@@ -9,12 +9,12 @@ using Microsoft.Xna.Framework.Media;
 
 namespace Foregunners
 {
-    public static class Camera2D
+    public static class Camera
     {
 		public static float _zoom = 1.0f;
 		public static float _perspective = 0.0f;
-        private static float _rotation = MathHelper.Pi / 4.0f;
-		private static Vector2 _pos = Vector2.Zero;
+		private static float _rotation = 0.0f; 
+		private static Vector2 _pos = Vector2.Zero; // TODO: change this to a V3 for height mapping 
         private static Matrix _transform;
 
 		public static float Perspective
@@ -33,7 +33,7 @@ namespace Foregunners
 		public static float Zoom
 		{
 			get { return _zoom; }
-			set { _zoom = MathHelper.Clamp(value, 0.25f, 1.0f); }
+			set { _zoom = MathHelper.Clamp(value, 0.125f, 2.0f); }
 		}
 
 		public static Vector3 Lens()
@@ -49,7 +49,7 @@ namespace Foregunners
 
         public static Matrix get_transformation(Viewport viewport)
         {
-            _transform =       // Thanks to o KB o for this solution
+            _transform =
               Matrix.CreateTranslation(new Vector3(-_pos.X, -_pos.Y, 0)) *
                                          Matrix.CreateRotationZ(Rotation) *
                                          Matrix.CreateScale(Lens()) * 

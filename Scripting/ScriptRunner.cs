@@ -21,8 +21,8 @@ namespace Foregunners
 				Camera.Zoom = scene.Zoom;
 			if (scene.Rotation != 0.0f)
 				Camera.Rotation = scene.Rotation;
-			//if (scene.Perspective != 0.0f)
-			//	Camera.Perspective = scene.Perspective;
+			if (scene.Perspective != 0.0f)
+				Camera.Perspective = scene.Perspective;
 
 			ScBasic temp;
 

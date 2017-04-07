@@ -6,45 +6,31 @@ Name: Demo
 Map: Station
 
 # Default camera values 
-Zoom: 1.0
-Rotation: 0.0
-Perspective: 1.0
+Zoom: 0.25
+Rotation: -0.78539
+Perspective: 0.0
 
+# Scripts to run upon level start (instructions, enemies, etc)
 Inject:
-- Rev1
-- Intro
+- IntroIn
+- WormEye
 
-Dialogue:
-- Sid: Rev1
-  Text: Testing YAML and SceneBuilder
-  Inject: 
-  -  Rev2
-- Sid: Rev2
-  Text: We made it this far... 
-  Inject:
-  -  Rev3
-- Sid: Rev3 
-  Text: Let's finish with a bang!
-  
 # Cameras determine the zoom, rotation and perspective of the cam.
-# Leave any value blank to default to the scene or previous cam. 
+# If a field is not defined for any cam, the previous value or default will remain. 
 
 Cameras:
-- Sid: Intro
+- Sid: WormEye
+  Rotation: 0.78539
+  Perspective: 0.78539
+  Time: 5.0
+- Sid: IntroIn
+  Zoom: 2.0
+  Time: 3
+  Inject: 
+  - IntroOut
+- Sid: IntroOut
   Zoom: 1.0
-  Rotation: 0.785
-  Perspective: 1.0
-  Time: 4
-  Inject: 
-  - Num2
-- Sid: Num2
-  Zoom: 0.25
-  Time: 2.5 
-  Inject: 
-  - Num3
-- Sid: Num3
-  Zoom: 1.5
-  Time: 2.5
+  Time: 2
   
 Trackers:
 - Sid: FollowAvatar

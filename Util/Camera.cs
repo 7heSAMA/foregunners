@@ -17,6 +17,8 @@ namespace Foregunners
 		private static Vector2 _pos = Vector2.Zero; // TODO: change this to a V3 for height mapping 
         private static Matrix _transform;
 
+		// Minimum (0f) indicates an overhead view, 
+		// maximum (Pi / 4f or ~0.78539) indicates a 3/4 isometric view
 		public static float Perspective
 		{
 			get { return _perspective; }
@@ -29,7 +31,7 @@ namespace Foregunners
 			get { return _rotation; }
 			set { _rotation = Gizmo.WrapAngle(value); }
 		}
-
+		
 		public static float Zoom
 		{
 			get { return _zoom; }

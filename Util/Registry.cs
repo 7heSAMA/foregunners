@@ -178,7 +178,7 @@ namespace Foregunners
                 (float)Math.Cos(angle),
                 (float)Math.Sin(angle)) * len;
 			
-			// Equivalent of multiplying sprite offset by Z
+			// Equivalent of calculating sprite spin based on z/perspective 
 			flatPos.Y -= pos.Z * (float)Math.Cos(Camera.Perspective);
 			flatPos *= Camera.Zoom;
 
@@ -205,17 +205,16 @@ namespace Foregunners
 			Vector3 lens = Camera.Lens();
 
 			pos.X /= lens.X;
-			pos.Y /= lens.X;
+			pos.Y /= lens.Y;
             
             float angle = (float)Math.Atan2(pos.Y, pos.X) - Camera.Rotation;
             float length = pos.Length();
             
             pos = new Vector2(
                 (float)Math.Cos(angle) * length,
-                (float)Math.Sin(angle) * length);	// TODO: fix this shit, too 
-													// think I'll have to divide by Cos(Perspective) or similar 
+                (float)Math.Sin(angle) * length);
 
-            pos += Camera.Pos;
+			pos += Camera.Pos;
 
             return new Vector3(pos, z);
         }
@@ -226,10 +225,12 @@ namespace Foregunners
                 return OverlayToWorld(Mouse.GetState().Position);
             else
             {
-                float xyMag = (float)Math.Sin(Camera.Perspective) * 0.785f; // TODO: fix this shit
+				float xyMag = (float)(Math.Cos(Camera.Perspective) * Math.Sin(Camera.Perspective));
                 float zMag = (float)Math.Cos(Camera.Perspective);
 
+				// convert camera angle to a 1st person 'god's ray' kinda thing 
                 float rotation = -Camera.Rotation + MathHelper.Pi / 2.0f;
+
                 float x = (float)Math.Cos(rotation);
                 float y = (float)Math.Sin(rotation);
 
@@ -242,8 +243,12 @@ namespace Foregunners
 
         public static void Draw(SpriteBatch spriteBatch)
         {
+			// convert camera angle to a 3rd person kinda view 
 			float angle = -Camera.Rotation - MathHelper.Pi / 2.0f;
+
+			// use that and the perspective ratio to determine sprite offset (aka spin) 
 			Spin = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
+			Spin *= (float)Math.Sin(Camera.Perspective); 
 			
 			if (Stage != null)
                 Stage.Draw(spriteBatch);

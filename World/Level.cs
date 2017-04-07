@@ -202,13 +202,6 @@ namespace Foregunners
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            /*float angle = -Camera.Rotation - MathHelper.Pi / 2.0f;
-            Vector2 spin = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
-            
-            spin *= (float)Math.Sin(Camera.Perspective);
-            // TODO: transfer this to a script
-            Registry.Spin = spin;*/
-
 			Vector3 topLeft = Registry.OverlayToWorld(new Point(0, 0));
 			Vector3 topRight = Registry.OverlayToWorld(new Point(Main.Viewport.Width, 0));
 			Vector3 botLeft = Registry.OverlayToWorld(new Point(0, Main.Viewport.Height));

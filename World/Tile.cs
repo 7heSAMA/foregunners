@@ -224,7 +224,7 @@ namespace Foregunners
 
 			for (int subZ = 0; subZ < DIVS; subZ++)
 			{
-				// increase subZ by 1 so sprites push up against bounding area
+				// TODO: increase subZ by 1 so sprites push up against bounding area? 
 				float scaler = Position.Z + ((subZ + 1) * DEPTH / DIVS);
 				float depth = Registry.GetDepth(scaler);
 				offset = Vector2.Zero;
@@ -237,7 +237,8 @@ namespace Foregunners
 						source = Sprites[subX, subY, subZ].Source;
 						if (source != Rectangle.Empty)
 						{
-							oriPos = basePos + offset + Registry.Spin * scaler;
+							oriPos = 
+								Registry.CalcRenderPos(new Vector3(basePos + offset, scaler));
 							batch.Draw(
 								Registry.Tilesheet,
 								oriPos,

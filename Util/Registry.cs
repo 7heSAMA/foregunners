@@ -179,7 +179,7 @@ namespace Foregunners
                 (float)Math.Sin(angle)) * len;
 			
 			// Equivalent of calculating sprite spin based on z/perspective 
-			flatPos.Y -= pos.Z * (float)Math.Cos(Camera.Perspective);
+			flatPos.Y -= pos.Z * (float)(Math.Cos(Camera.Perspective) * Math.Sin(Camera.Perspective));
 			flatPos *= Camera.Zoom;
 
             flatPos.X += Main.Viewport.Width / 2;

@@ -20,12 +20,10 @@ namespace Foregunners
     {
         private GraphicsDeviceManager Graphics;
         private SpriteBatch Batch;
-        
-        // should all be moved to registry or something
         public static Viewport Viewport { get; private set; }
-        //public static Camera2D Cam { get; private set; }
+		private bool Fullscreen = false;
 
-        public Main()
+		public Main()
         {
             Graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
@@ -39,14 +37,28 @@ namespace Foregunners
         /// </summary>
         protected override void Initialize()
         {
-			Viewport = new Viewport(new Rectangle(0, 0, 960, 540)); //1366, 768));
-			Graphics.PreferredBackBufferWidth = Viewport.Width;
-            Graphics.PreferredBackBufferHeight = Viewport.Height;
-            Graphics.IsFullScreen = false;
-            Graphics.ApplyChanges();
-
+			SetViewport();
             base.Initialize();
         }
+		
+		protected void SetViewport()
+		{
+			if (Fullscreen)
+			{
+				Viewport = new Viewport(new Rectangle(0, 0, 1366, 768));
+				Graphics.PreferredBackBufferWidth = Viewport.Width;
+				Graphics.PreferredBackBufferHeight = Viewport.Height;
+				Graphics.IsFullScreen = true;
+			}
+			else
+			{
+				Viewport = new Viewport(new Rectangle(0, 0, 960, 540));
+				Graphics.PreferredBackBufferWidth = Viewport.Width;
+				Graphics.PreferredBackBufferHeight = Viewport.Height;
+				Graphics.IsFullScreen = false;
+			}
+			Graphics.ApplyChanges();
+		}
 
         /// <summary>
         /// LoadContent will be called once per game and is the place to load
@@ -56,10 +68,7 @@ namespace Foregunners
         {
             Batch = new SpriteBatch(GraphicsDevice);
 
-            Registry.LoadGameServices(GraphicsDevice, Content, Services);
-            
-            Registry.Stage = new Level("arena", Services);
-			Registry.Stage.Initialize();
+			Registry.LoadGameServices(GraphicsDevice, Content, Services);
         }
 
         /// <summary>
@@ -78,15 +87,14 @@ namespace Foregunners
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || 
-                Keyboard.GetState().IsKeyDown(Keys.Escape))
-                Exit();
+            if (Keyboard.GetState().IsKeyDown(Keys.Escape))
+				Exit();
 
 			Camera.Pos = new Vector2(Registry.Avatar.Position.X, Registry.Avatar.Position.Y);
 
-            TipSorter.Update();
-            
-            Registry.Update(gameTime);
+			TipSorter.Update();
+
+			Registry.Update(gameTime);
 
             base.Update(gameTime);
         }
@@ -97,33 +105,23 @@ namespace Foregunners
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            // Clear 
             GraphicsDevice.Clear(Registry.DarkPurple);
             
-            // Begin transformed 
-            Batch.Begin(SpriteSortMode.BackToFront,
-                    BlendState.AlphaBlend,
-                    SamplerState.PointClamp,
-                    null, null, null,
-                    Camera.get_transformation(Viewport));
-            
-            // Draw transformed 
-            Registry.Draw(Batch);
-            Batch.End();
-            
-            // Draw normal 
-            Batch.Begin();
-            
-            TipSorter.Draw(Batch);
+            // Draw transformed sprites  
+            Batch.Begin(
+				SpriteSortMode.BackToFront,
+				BlendState.AlphaBlend,
+				SamplerState.PointClamp,
+				null, null, null,
+				Camera.get_transformation(Viewport));
+			Registry.Draw(Batch);
+			Batch.End();
 
-            Color trite = Color.Lerp(Color.White, Color.Transparent, 0.5f);
+			// Draw GUI 
+			Batch.Begin();
+			TipSorter.Draw(Batch);
+			Batch.End();
 
-            Registry.CenterLine(Batch, 2.0f, trite, new Vector2(0.0f, Registry.MouseV2.Y),
-                new Vector2(Viewport.Width, Registry.MouseV2.Y), 0.0f);
-			Registry.CenterLine(Batch, 2.0f, trite, new Vector2(Registry.MouseV2.X, 0.0f),
-				new Vector2(Registry.MouseV2.X, Viewport.Height), 0.0f);
-                
-            Batch.End();
             base.Draw(gameTime);
         }
     }

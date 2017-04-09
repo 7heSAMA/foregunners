@@ -70,14 +70,15 @@
     <Compile Include="Scripting\Dialogue.cs" />
     <Compile Include="Scripting\Scenario.cs" />
     <Compile Include="Scripting\ScriptRunner.cs" />
+    <Compile Include="Scripting\Spawn.cs" />
     <Compile Include="Scripting\Tracker.cs" />
+    <Compile Include="Scripting\Zone.cs" />
     <Compile Include="Util\YamLoader.cs" />
     <Compile Include="World\Interfaces.cs" />
     <Compile Include="Physics\Manager.cs" />
     <Compile Include="Physics\Particle.cs" />
     <Compile Include="Scripting\Tooltip.cs" />
     <Compile Include="Units\Beetle.cs" />
-    <Compile Include="Units\Dummy.cs" />
     <Compile Include="Units\Sprite.cs" />
     <Compile Include="Units\Unit.cs" />
     <Compile Include="Util\Gizmos.cs" />
@@ -104,9 +105,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Content\yaml\demo.yaml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Include="Content\Maps\skull\skull0.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -206,7 +204,10 @@
     <Content Include="Content\sprites1.png" />
     <Content Include="Content\tileset.png" />
     <Content Include="Icon.ico" />
-    <None Include="Content\yaml\demoII.yaml">
+    <None Include="Content\Units\BasicUnits.yaml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Content\Scenes\DemoII.yaml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Foregunners_TemporaryKey.pfx" />

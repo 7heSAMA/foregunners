@@ -86,7 +86,4 @@ namespace Foregunners
                 Stored.Add(new Particle(0.99f, 0.9f));
         }
     }
-
-    public class UnitManager : Manager<Unit>
-    { }
 }

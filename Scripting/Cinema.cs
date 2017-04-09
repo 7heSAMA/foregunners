@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 
-namespace Foregunners
+namespace Foregunners.Scripting
 {
 	public class Cinema : ScBasic
 	{
@@ -23,7 +23,7 @@ namespace Foregunners
 			public float Perspective { get; set; }
 			public float Time { get; set; }
 		}
-
+		
 		public Cinema(Data data)
 			: base(data)
 		{
@@ -44,7 +44,6 @@ namespace Foregunners
 		public override void Update()
 		{
 			float percent = (float)(Registry.Seconds - StartTime) / Time;
-			Console.WriteLine(percent);
 			
 			if (Zoom != 0.0f)
 				Camera.Zoom = MathHelper.SmoothStep(StartZoom, Zoom, percent);

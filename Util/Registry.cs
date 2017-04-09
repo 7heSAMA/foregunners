@@ -15,7 +15,9 @@ namespace Foregunners
     {
         public static GameServiceContainer Services;
 
-        public static List<Vector3> Points;
+		public static Viewport Viewport { get; private set; }
+
+		public static List<Vector3> Points;
         public static Vector3 MouseCast { get; protected set; }
         public static Vector2 MouseV2 { get; private set; }
         
@@ -32,14 +34,13 @@ namespace Foregunners
         private static List<IManager> Managers;
 
         public static ParticleManager PartMan;
-        public static UnitManager UnitMan;
+        public static Manager<Unit> UnitMan;
         public static MunManager MunMan;
 
         public static Texture2D Spritesheet, Tilesheet, Blank, Triangle, NASA;
         public static SpriteFont Header, Body, Flobots;
 
         public static Player Avatar;
-		public static ScriptRunner Runner;
 
         public static KeyboardState LastKeyboard { get; private set; }
         public static MouseState LastMouse { get; private set; }
@@ -48,8 +49,11 @@ namespace Foregunners
         public static Color BoneWhite = Color.Lerp(Color.LightGray, Color.MonoGameOrange, 0.1f);
         public static Color DarkPurple = new Color(24, 8, 18);
         public static Color BurnThru = Color.Lerp(DarkPurple, Color.TransparentBlack, 0.25f);
-		
-        public static void LoadGameServices(
+
+		// SCRIPTING 
+		public static Scripting.ScriptRunner Runner;
+
+		public static void LoadGameServices(
             GraphicsDevice graphics, ContentManager content, GameServiceContainer services)
         {
 			Seconds = 0.0f;
@@ -66,14 +70,14 @@ namespace Foregunners
             Managers = new List<IManager>();
 
             PartMan = new ParticleManager();
-            UnitMan = new UnitManager();
+            UnitMan = new Manager<Unit>();
             MunMan = new MunManager();
 
             Managers.Add(PartMan);
             Managers.Add(UnitMan);
             Managers.Add(MunMan);
 
-			Runner = new ScriptRunner();
+			Runner = new Scripting.ScriptRunner();
 
             Header = Content.Load<SpriteFont>("Header");
             Body = Content.Load<SpriteFont>("Body");
@@ -104,6 +108,15 @@ namespace Foregunners
             Triangle.SetData(triColors, 0, Tile.FOOT * Tile.FOOT);
         }
         
+		public static void LoadLevel(string mapPath, string scenePath)
+		{
+			Stage = new Level("arena", Services);
+			Stage.Initialize();
+
+			Scripting.Scenario scene = YamLoader.Load<Scripting.Scenario>("Content/Scenes/DemoII.yaml");
+			Runner.BuildScene(scene);
+		}
+
         public static void Update(GameTime gameTime)
         {
 			Seconds = gameTime.TotalGameTime.TotalSeconds;
@@ -199,8 +212,8 @@ namespace Foregunners
         public static Vector3 OverlayToWorld(Point screen, float z = 0.0f)
         {
             Vector2 pos = new Vector2(
-                screen.X - Main.Viewport.Width / 2,
-                screen.Y - Main.Viewport.Height / 2);
+                screen.X - Viewport.Width / 2,
+                screen.Y - Viewport.Height / 2);
 
 			Vector3 lens = Camera.Lens();
 

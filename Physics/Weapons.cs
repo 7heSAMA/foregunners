@@ -161,9 +161,10 @@ namespace Foregunners
 	
     public class Munition : SimFrame
     {
-        Specs Specification;
-        IReal Shooter;
-        bool Struck;
+        protected Specs Specification;
+        protected IReal Shooter;
+        protected bool Struck;
+		protected int Bounces;
 
         public Munition(Specs spec)
             : base (2, 2, spec.Drag, spec.Elasticity, spec.Gravitized)
@@ -172,7 +173,7 @@ namespace Foregunners
             Struck = false;
         }
 
-        protected override void RunAxisFull(float cylceTime, string xyz)
+        protected override void RunAxisFull(float cycleTime, string xyz)
         {
             if (xyz == "X")
                 Position += Velocity;
@@ -189,12 +190,22 @@ namespace Foregunners
         {
             if (Struck)
             {
-                Active = false;
-                for (int i = 0; i < 5; i++)
-                    Registry.PartMan.Activate(Position, new Vector3(
-                        (float)Registry.RNG.NextDouble() - 0.5f,
-                        (float)Registry.RNG.NextDouble() - 0.5f,
-                        (float)Registry.RNG.NextDouble()) * 15.0f);
+				Bounces += 1;
+
+				if (Bounces >= Specification.MaxBounces)
+				{
+					/*Active = false;
+					for (int i = 0; i < 5; i++)
+						Registry.PartMan.Activate(Position, new Vector3(
+							(float)Registry.RNG.NextDouble() - 0.5f,
+							(float)Registry.RNG.NextDouble() - 0.5f,
+							(float)Registry.RNG.NextDouble()) * 15.0f);*/
+				}
+				else
+				{
+					Velocity = new Vector3(Velocity.X, Velocity.Y, -Velocity.Z);
+					Position = LastPos;
+				}
             }
 
             foreach (Unit unit in Registry.UnitMan.Active)
@@ -251,7 +262,7 @@ namespace Foregunners
         static MunManager()
         {
             Shrapnel = new Specs(Cat.KE, 25.0f, 0.65f, 2);
-            Grenade = new Specs(Cat.KE, 50.0f, 1.0f, true, true, 60, true, 3, 0.5f, 0, Shrapnel);
+            Grenade = new Specs(Cat.KE, 100.0f, 0.975f, true, true, 60, true, 2, 0.5f, 0, Shrapnel);
             Bullet = new Specs(Cat.KE, 40.0f, 40);
             Pulse = new Specs(Cat.EM, 32.0f, 20);
         }

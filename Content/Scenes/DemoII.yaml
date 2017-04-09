@@ -6,7 +6,7 @@ Name: Demo
 Map: Station
 
 # Default camera values 
-Zoom: 0.25
+Zoom: 0.5
 Rotation: -0.78539
 Perspective: 0.0
 
@@ -14,24 +14,55 @@ Perspective: 0.0
 Inject:
 - IntroIn
 - WormEye
+# - SpawnPlayer
 
 # Cameras determine the zoom, rotation and perspective of the cam.
 # If a field is not defined for any cam, the previous value or default will remain. 
+
+#Factions:
+#- OSO
+#- LYNX
+#- JKL
+#- WSL
 
 Cameras:
 - Sid: WormEye
   Rotation: 0.78539
   Perspective: 0.78539
-  Time: 5.0
+  Time: 5.5
 - Sid: IntroIn
   Zoom: 2.0
-  Time: 3
+  Time: 4
   Inject: 
   - IntroOut
 - Sid: IntroOut
   Zoom: 1.0
   Time: 2
   
+# Not currently implemented 
 Trackers:
 - Sid: FollowAvatar
   Target: Avatar
+  
+Zones:
+- Name: Three
+  X: 21
+  Y: 11
+  Z: 0
+  Width: 2
+  Height: 2
+  Depth: 1
+- Name: Nine
+  X: 1
+  Y: 11
+  Z: 0
+  Width: 2
+  Height: 2
+  Depth: 1
+- Name: Noon
+  X: 11
+  Y: 1
+  Z: 0
+  Width: 2
+  Height: 2
+  Depth: 1

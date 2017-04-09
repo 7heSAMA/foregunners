@@ -99,7 +99,65 @@ namespace Foregunners
         }
     }
 
-    public class Tooltip : IComparable<Tooltip>
+	public class FillBar
+	{
+		public enum Interrupt
+		{
+			Lose,
+			Decay,
+			Steady
+		}
+
+		private readonly float Max;
+		private float Fill;
+		public float Percent { get; private set; }
+		public bool Filled { get; private set; }
+		public bool Empty { get; private set; }
+
+		/// <summary>  </summary>
+		/// <param name="timeToFill"></param>
+		/// <param name="interrupt"></param>
+		/// <param name="decayRate"></param>
+		public FillBar(float timeToFill, Interrupt interrupt, float decayRate = float.NaN)
+		{
+			Max = timeToFill * 60.0f;
+		}
+
+		/// <summary></summary>
+		/// <param name="timeToFill">Measured in seconds</param>
+		public FillBar(float timeToFill)
+		{
+			Max = timeToFill * 60.0f;
+		}
+
+		public void Increment(float cycleTime)
+		{
+			Empty = false;
+			Fill += cycleTime;
+
+			if (Fill > Max)
+			{
+				Fill = Max;
+				Filled = true;
+			}
+			Percent = Fill / Max;
+		}
+
+		public void Decrement(float cycleTime)
+		{
+			Filled = false;
+			Fill -= cycleTime;
+
+			if (Fill < 0.0f)
+			{
+				Fill = 0.0f;
+				Empty = true;
+			}
+			Percent = Fill / Max;
+		}
+	}
+
+	public class Tooltip : IComparable<Tooltip>
     {
         public const float LINEWIDTH = 2.0f;
         

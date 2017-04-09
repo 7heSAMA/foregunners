@@ -6,7 +6,7 @@ using System.Drawing;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 
-namespace Foregunners
+namespace Foregunners.Scripting
 {
 	public class Scenario
 	{
@@ -22,5 +22,6 @@ namespace Foregunners
 		public List<Cinema.Data> Cameras { get; set; } = new List<Cinema.Data>();
 		public List<Tracker.Data> Trackers { get; set; } = new List<Tracker.Data>();
 		public List<Dialogue.Data> Dialogue { get; set; } = new List<Dialogue.Data>();
+		public List<Zone> Zones { get; set; } = new List<Zone>();
 	}
 }

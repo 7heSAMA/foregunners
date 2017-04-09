@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Foregunners
+namespace Foregunners.Scripting
 {
 	public class ScriptRunner
 	{
@@ -14,6 +14,9 @@ namespace Foregunners
 		private List<string> SidToRemove = new List<string>();
 
 		public int ActiveCount { get { return ScActive.Count(); } }
+
+		// not sure this is really the right spot for this 
+		public List<Zone> Zones { get; private set; } = new List<Zone>();
 
 		public void BuildScene(Scenario scene)
 		{
@@ -37,7 +40,7 @@ namespace Foregunners
 				temp = new Tracker(dat);
 				ScWaiting.Add(temp.Sid, temp);
 			}
-
+			
 			foreach (Cinema.Data dat in scene.Cameras)
 			{
 				temp = new Cinema(dat);
@@ -46,6 +49,9 @@ namespace Foregunners
 
 			foreach (string sid in scene.Inject)
 				Inject(sid);
+
+			foreach (Zone zone in scene.Zones)
+				Zones.Add(zone);
 		}
 
 		public void Update()
@@ -74,8 +80,8 @@ namespace Foregunners
 			ScInjected.Clear();
 		}
 
-		// note: currently does -not- remove injected 
-		// scripts from the stored database
+		// note: does -not- remove injected scripts from the stored database, 
+		// so that they may be reactivated 
 		public void Inject(string sid)
 		{
 			IScript toInject;
@@ -92,8 +98,8 @@ namespace Foregunners
 	public abstract class ScBasic : IScript
 	{
 		public string Sid { get; private set; }
-		public bool Repeat { get; protected set; }
-		public bool Active { get; protected set; }
+		public bool Repeat { get; protected set; } = false;
+		public bool Active { get; protected set; } = false;
 
 		public List<string> InjectOnFinish { get; private set; }
 

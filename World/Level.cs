@@ -20,9 +20,6 @@ namespace Foregunners
 		{
 			GroundLevel = 0;
 			LoadTiles(map);
-			
-			Scenario scene = YamLoader.Load<Scenario>("Content/yaml/demoII.yaml");
-			Registry.Runner.BuildScene(scene);
 		}
 
 		public void Initialize()
@@ -203,9 +200,10 @@ namespace Foregunners
         public void Draw(SpriteBatch spriteBatch)
         {
 			Vector3 topLeft = Registry.OverlayToWorld(new Point(0, 0));
-			Vector3 topRight = Registry.OverlayToWorld(new Point(Main.Viewport.Width, 0));
-			Vector3 botLeft = Registry.OverlayToWorld(new Point(0, Main.Viewport.Height));
-			Vector3 botRight = Registry.OverlayToWorld(new Point(Main.Viewport.Width, Main.Viewport.Height));
+			Vector3 topRight = Registry.OverlayToWorld(new Point(Registry.Viewport.Width, 0));
+			Vector3 botLeft = Registry.OverlayToWorld(new Point(0, Registry.Viewport.Height));
+			Vector3 botRight = Registry.OverlayToWorld(new Point(Registry.Viewport.Width, 
+				Registry.Viewport.Height));
 
 			int xStart = Tile.GetArrayXY(Math.Min(
 				Math.Min(topLeft.X, topRight.X), Math.Min(botLeft.X, botRight.X))) - 2;

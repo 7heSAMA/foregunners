@@ -13,9 +13,6 @@ namespace Foregunners
 {
     public class Player : Unit
     {
-        private float OnArmMouseY, AimMouseY;
-        private bool Armed;
-        private Vector3 StoredTarget;
         private TurretMount Turret;
 
         public Player(Vector3 pos)
@@ -33,13 +30,13 @@ namespace Foregunners
 
         private void Tipper()
         {
-            Tooltip vitals = new Tooltip(this, TextBox.Make("Avatar", Registry.Header));
+            Tooltip vitals = Tooltip.MakeTip(this, TextBox.Make("Avatar", Registry.Header));
 
             vitals.AddEntry(TextBox.Make(this, "Shield", Registry.Body, "Shield: "));
             vitals.AddEntry(TextBox.Make(this, "Armor", Registry.Body, "Armor: "));
             vitals.AddEntry(TextBox.Make(this, "Hull", Registry.Body, "Hull: "));
 			
-            TipSorter.Add(vitals);
+            GUI.Add(vitals);
         }
         
         protected override void RunLogic(float cycleTime)
@@ -71,14 +68,7 @@ namespace Foregunners
             Turret.Target(target);
             if (Keyboard.GetState().IsKeyDown(Keys.Space))
                 Turret.Fire();
-
-            if (Registry.LeftClick() && !Armed)
-            {
-                Armed = true;
-                OnArmMouseY = Registry.MouseV2.Y;
-                StoredTarget = target;
-            }
-            
+			
             base.RunLogic(cycleTime);
         }
 
@@ -86,14 +76,15 @@ namespace Foregunners
         {
             Chassis.Draw(batch);
 
-            Registry.Points.Add(Registry.MouseCast + new Vector3(0, 0, Depth / 2));
+			// Reticle calc: 
+			Vector2 castReticle = Registry.CalcRenderPos(Registry.MouseCast + new Vector3(0, 0, Depth / 2));
+			float rotation = -Camera.Rotation + MathHelper.Pi / 4.0f;
 
-            Registry.DrawQuad(batch, Registry.CalcRenderPos(Registry.MouseCast +
-                new Vector3(0, 0, Depth / 2)),
-                Color.Black, MathHelper.Pi / 2.0f, new Vector2(Foot / 2 + 8), 0.02f, true);
-            Registry.DrawQuad(batch, Registry.CalcRenderPos(Registry.MouseCast +
-                new Vector3(0, 0, Depth / 2)),
-                Color.MonoGameOrange, MathHelper.Pi / 2.0f, new Vector2(Foot / 2), 0.0f, true);
+			// Reticle render:
+			Registry.DrawQuad(batch, castReticle, Color.Black, 
+				rotation, new Vector2(Foot / 2 + 8), 0.02f, true);
+            Registry.DrawQuad(batch, castReticle, Color.MonoGameOrange, 
+				rotation, new Vector2(Foot / 2), 0.0f, true);
         }
     }
 }

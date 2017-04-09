@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Text;
+using System.IO;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
@@ -8,65 +8,62 @@ using Microsoft.Xna.Framework.Input;
 
 namespace Foregunners
 {
-    /// <summary>
-    /// Tracks universal values across levels, UI states, game saves, etc. 
-    /// </summary>
-    public class Registry
-    {
-        public static GameServiceContainer Services;
-
-		public static Viewport Viewport { get; private set; }
-
-		public static List<Vector3> Points;
-        public static Vector3 MouseCast { get; protected set; }
-        public static Vector2 MouseV2 { get; private set; }
-        
-        public static Random RNG;
-        public static Vector2 Spin;
-        public const float TargetCycle = 1.0f / 60.0f;
-
-        public static Level Stage;
-        public static float cycleTime;
+	/// <summary>
+	/// Tracks universal values across levels, UI states, game saves, etc. 
+	/// </summary>
+	public class Registry
+	{
+		#region fields and properties 
 		public static double Seconds;
+		public const float TargetCycle = 1.0f / 60.0f;
+		private static float CycleTime;
 
-        private static GraphicsDevice Graphics;
-        private static ContentManager Content;
-        private static List<IManager> Managers;
+		// Input 
+		public static Vector3 MouseCast { get; protected set; }
+		public static Vector2 MouseV2 { get; private set; }
 
-        public static ParticleManager PartMan;
-        public static Manager<Unit> UnitMan;
-        public static MunManager MunMan;
+		public static KeyboardState LastKeyboard { get; private set; }
+		public static MouseState LastMouse { get; private set; }
+		public static bool Debug { get; private set; }
 
-        public static Texture2D Spritesheet, Tilesheet, Blank, Triangle, NASA;
-        public static SpriteFont Header, Body, Flobots;
+		// Collections/management 
+		public static Level Stage { get; private set; }
+		private static List<IManager> Managers;
 
-        public static Player Avatar;
+		public static ParticleManager PartMan;
+		public static Manager<Unit> UnitMan;
+		public static MunManager MunMan;
 
-        public static KeyboardState LastKeyboard { get; private set; }
-        public static MouseState LastMouse { get; private set; }
-        public static bool Debug { get; private set; }
+		public static Player Avatar { get; set; }
+
+		// Textures and typography 
+		private static ContentManager Content;
+		public static Texture2D Spritesheet, Tilesheet, Blank;
+		public static SpriteFont Header, Body, Flobots;
 		
         public static Color BoneWhite = Color.Lerp(Color.LightGray, Color.MonoGameOrange, 0.1f);
         public static Color DarkPurple = new Color(24, 8, 18);
         public static Color BurnThru = Color.Lerp(DarkPurple, Color.TransparentBlack, 0.25f);
 
-		// SCRIPTING 
-		public static Scripting.ScriptRunner Runner;
+		// Rendering 
+		public static Vector2 Spin { get; private set; }
 
-		public static void LoadGameServices(
-            GraphicsDevice graphics, ContentManager content, GameServiceContainer services)
+		// Scripting 
+		public static Scripting.ScriptRunner Runner { get; private set; }
+		public static Random RNG { get; private set; }
+		#endregion
+
+		#region Constructors and initializers 
+		public static void LoadGameServices(GraphicsDevice graphics, ContentManager content)
         {
+			// Initialize stuff
 			Seconds = 0.0f;
-
-            Graphics = graphics;
             Content = content;
-            Services = services;
+
+			RNG = new Random();
+			LastKeyboard = Keyboard.GetState();
 			
-            Points = new List<Vector3>();
-
-            RNG = new Random();
-            LastKeyboard = Keyboard.GetState();
-
+			// Load managers 
             Managers = new List<IManager>();
 
             PartMan = new ParticleManager();
@@ -78,68 +75,86 @@ namespace Foregunners
             Managers.Add(MunMan);
 
 			Runner = new Scripting.ScriptRunner();
+			LoadPaths();
 
+			// Load sprite/typography data 
             Header = Content.Load<SpriteFont>("Header");
             Body = Content.Load<SpriteFont>("Body");
             Flobots = Content.Load<SpriteFont>("Flobots");
 
             Spritesheet = Content.Load<Texture2D>("sprites1.png");
             Tilesheet = Content.Load<Texture2D>("tileset.png");
-
-            NASA = Content.Load<Texture2D>("nasa-tumbler.png");
-            Blank = new Texture2D(Graphics, 1, 1, false, SurfaceFormat.Color);
+			
+            Blank = new Texture2D(graphics, 1, 1, false, SurfaceFormat.Color);
             Blank.SetData(new[] { Color.White });
-
-            int i = 0;
-            Color[] triColors = new Color[Tile.FOOT * Tile.FOOT];
-            for (int y = 0; y < Tile.FOOT; y++)
-                for (int x = 0; x < Tile.FOOT; x++)
-                {
-                    Color color;
-                    if (x <= y)
-                        color = Color.White;
-                    else
-                        color = Color.Transparent;
-                    triColors[i] = color;
-                    i++;
-                }
-
-            Triangle = new Texture2D(Graphics, Tile.FOOT, Tile.FOOT, false, SurfaceFormat.Color);
-            Triangle.SetData(triColors, 0, Tile.FOOT * Tile.FOOT);
         }
         
-		public static void LoadLevel(string mapPath, string scenePath)
+		public static void LoadPaths()
 		{
-			Stage = new Level("arena", Services);
-			Stage.Initialize();
+			string[] levels = Directory.GetDirectories("Content/Maps");
+			string[] layouts = Directory.GetFiles("Content/Scenes");
 
-			Scripting.Scenario scene = YamLoader.Load<Scripting.Scenario>("Content/Scenes/DemoII.yaml");
-			Runner.BuildScene(scene);
+			Console.WriteLine("Levels:");
+			foreach (string lev in levels)
+				Console.WriteLine("    " + lev);
+			Console.WriteLine("Layouts:");
+			foreach (string lay in layouts)
+				Console.WriteLine("    " + lay);
+			
 		}
 
-        public static void Update(GameTime gameTime)
+		public static void LoadLevel(string mapPath, string scenePath)
+		{
+			Stage = new Level(mapPath);
+			Stage.Initialize();
+
+			Scripting.Scenario scene = YamLoader.Load<Scripting.Scenario>(scenePath);
+			Runner.BuildScene(scene);
+		}
+		#endregion
+
+		#region Draw and Update
+		public static void Update(GameTime gameTime)
         {
+			// Update GUI status and elapsed time 
 			Seconds = gameTime.TotalGameTime.TotalSeconds;
-            cycleTime = (float)gameTime.ElapsedGameTime.TotalSeconds / (1.0f / 60.0f);
+            CycleTime = (float)gameTime.ElapsedGameTime.TotalSeconds / (1.0f / 60.0f);
             MouseV2 = new Vector2(Mouse.GetState().X, Mouse.GetState().Y);
             MouseCast = CastMouseToWorld();
             
             if (KeyJustPressed(Keys.OemQuestion))
                 Debug = !Debug;
 
-            if (Stage != null)
-                Stage.Update();
+			// Run the game
+			Runner.Update();
 			
             foreach (IManager man in Managers)
-                man.RunSim(cycleTime);
+                man.RunSim(CycleTime);
 
-			Runner.Update();
-
+			// Update input for next cycle 
             LastKeyboard = Keyboard.GetState();
             LastMouse = Mouse.GetState();
         }
-        
-        public static bool KeyJustPressed(Keys key)
+
+		public static void Draw(SpriteBatch spriteBatch)
+		{
+			// convert camera angle to a 3rd person kinda view 
+			float angle = -Camera.Rotation - MathHelper.Pi / 2.0f;
+
+			// use that and the perspective ratio to determine sprite offset (aka spin) 
+			Spin = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
+			Spin *= (float)Math.Sin(Camera.Perspective);
+
+			// draw the map and all world-objects held by managers 
+			if (Stage != null)
+				Stage.Draw(spriteBatch);
+			foreach (IManager man in Managers)
+				man.DrawSprites(spriteBatch);
+		}
+		#endregion
+
+		#region input
+		public static bool KeyJustPressed(Keys key)
         {
             if (LastKeyboard.IsKeyUp(key) && Keyboard.GetState().IsKeyDown(key))
                 return true;
@@ -163,6 +178,7 @@ namespace Foregunners
             else
                 return false;
         }
+		#endregion
 
 		#region Render Calculations
 		public static Vector2 CalcRenderPos(Vector3 pos)
@@ -178,7 +194,6 @@ namespace Foregunners
 			else
 				return 1.0f - z / (4 * Tile.DEPTH);
 		}
-		#endregion
 
 		public static Vector2 WorldOnOverlay(Vector3 pos)
         {
@@ -212,8 +227,8 @@ namespace Foregunners
         public static Vector3 OverlayToWorld(Point screen, float z = 0.0f)
         {
             Vector2 pos = new Vector2(
-                screen.X - Viewport.Width / 2,
-                screen.Y - Viewport.Height / 2);
+                screen.X - Main.Viewport.Width / 2,
+                screen.Y - Main.Viewport.Height / 2);
 
 			Vector3 lens = Camera.Lens();
 
@@ -252,46 +267,10 @@ namespace Foregunners
 
                 return Stage.CastMousePos(OverlayToWorld(Mouse.GetState().Position), vel);
             }
-        }
-
-        public static void Draw(SpriteBatch spriteBatch)
-        {
-			// convert camera angle to a 3rd person kinda view 
-			float angle = -Camera.Rotation - MathHelper.Pi / 2.0f;
-
-			// use that and the perspective ratio to determine sprite offset (aka spin) 
-			Spin = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
-			Spin *= (float)Math.Sin(Camera.Perspective); 
-			
-			if (Stage != null)
-                Stage.Draw(spriteBatch);
-            foreach (IManager man in Managers)
-                man.DrawSprites(spriteBatch);
-            
-            foreach (Vector3 v3 in Points)
-            {
-                float depth = 0.0f; // GetDepth(v3.Z);
-                Vector2 v2 = new Vector2(v3.X, v3.Y);
-                CenterLine(
-                    spriteBatch, 4.0f, Color.MonoGameOrange, v2, CalcRenderPos(v3), depth);
-                DrawCircle(
-                    spriteBatch, 32.0f, 28.0f, v2, depth, Color.MonoGameOrange);
-            }
-            Points.Clear();
-        }
+		}
+		#endregion
 
         #region Drawing
-        public static void DrawTri(SpriteBatch spriteBatch, Vector2 pos, Color color, float rotation,
-            float scale, float depth, bool centered)
-        {
-            Vector2 origin;
-            if (centered)
-                origin = new Vector2(Triangle.Width / 2, Triangle.Height / 2);
-            else
-                origin = Vector2.Zero;
-            spriteBatch.Draw(Triangle, pos, null, color, rotation, origin, scale, SpriteEffects.None, depth);
-        }
-
         public static void DrawQuad(SpriteBatch spriteBatch, Vector2 position, Color color, float rotation,
             Vector2 scale, float depth, bool centered)
         {

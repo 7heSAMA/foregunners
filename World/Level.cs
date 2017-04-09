@@ -16,7 +16,8 @@ namespace Foregunners
 
 		private List<Vector3> Lights = new List<Vector3>();
 
-		public Level(string map, IServiceProvider serviceProvider)
+		#region constructor and load methods
+		public Level(string map)
 		{
 			GroundLevel = 0;
 			LoadTiles(map);
@@ -26,6 +27,115 @@ namespace Foregunners
 		{
 			LoadContextSource();
 		}
+		
+		private void LoadTiles(string mapName)
+		{
+			int i = 0;
+			string root = "Content/Maps/" + mapName + "/";
+			string path = root + mapName + i + ".txt";
+			List<string> paths = new List<string>();
+
+			while (System.IO.File.Exists(path))
+			{
+				paths.Add(path);
+				path = root + mapName + (++i) + ".txt";
+			}
+
+			if (paths.Count == 0)
+				throw new ArgumentException("Map " + mapName + " does not exist.");
+
+			for (int z = 0; z < paths.Count; z++)
+			{
+				int width;
+				List<string> Lines = new List<string>();
+
+				using (System.IO.StreamReader reader = new System.IO.StreamReader(paths[z]))
+				{
+					string line = reader.ReadLine();
+					width = line.Length;
+					while (line != null)
+					{
+						Lines.Add(line);
+						if (line.Length != width)
+							throw new NotSupportedException(string.Format(
+								"The length of line {0} is different from all preceding lines.", Lines.Count));
+						line = reader.ReadLine();
+					}
+				}
+
+				if (Tiles == null)
+					Tiles = new Tile[width, Lines.Count, paths.Count];
+
+				for (int y = 0; y < Height; ++y)
+				{
+					for (int x = 0; x < Width; ++x)
+					{
+						char TileType = Lines[y][x];
+						Tiles[x, y, z] = LoadTile(TileType, x, y, z);
+					}
+				}
+			}
+		}
+
+		private Tile LoadTile(char icon, int x, int y, int z)
+		{
+			Vector3 minCorner = new Vector3(x * Tile.FOOT, y * Tile.FOOT, z * Tile.DEPTH);
+			Color BoneWhite = new Color(100, 90, 80);
+			//BoneWhite = Color.Lerp(Color.LightGray, Color.MonoGameOrange, 0.1f);
+
+			switch (icon)
+			{
+				case '.':
+				case '-':
+					return new Tile();
+
+				case '#':
+				case '_':
+				case '"':
+				case '~':
+					return new Tile(minCorner, TileCollision.Solid, TileStyle.Flat, BoneWhite);
+
+				case '0':
+				case 'T':
+					return new Tile(minCorner, TileCollision.Landing, TileStyle.Flat | TileStyle.Slope, BoneWhite);
+
+				case '1':
+					return new TileSlope(minCorner, new Point(1, -1), TileStyle.Slope, BoneWhite);
+				case '2':
+					return new TileSlope(minCorner, new Point(1, 0), TileStyle.Slope, BoneWhite);
+				case '3':
+					return new TileSlope(minCorner, new Point(1, 1), TileStyle.Slope, BoneWhite);
+				case '4':
+					return new TileSlope(minCorner, new Point(0, 1), TileStyle.Slope, BoneWhite);
+				case '5':
+					return new TileSlope(minCorner, new Point(-1, 1), TileStyle.Slope, BoneWhite);
+				case '6':
+					return new TileSlope(minCorner, new Point(-1, 0), TileStyle.Slope, BoneWhite);
+				case '7':
+					return new TileSlope(minCorner, new Point(-1, -1), TileStyle.Slope, BoneWhite);
+				case '8':
+					return new TileSlope(minCorner, new Point(0, -1), TileStyle.Slope, BoneWhite);
+
+				case '@':
+					Player player = new Player(minCorner + new Vector3(Tile.Origin, Tile.DEPTH));
+
+					Registry.Avatar = player;
+					Registry.UnitMan.Add(player);
+
+					return new Tile();
+
+				case 'x':
+					Registry.UnitMan.Add(new Beetle(minCorner + new Vector3(
+						Tile.Origin, Tile.DEPTH * 2)));
+					return new Tile();
+
+				default:
+					throw new NotSupportedException(string.Format(
+						"Unsupported character type {0} at {1}, {2}, depth of {3}.",
+						icon, x, y, z));
+			}
+		}
+		#endregion
 
 		#region Bounds and Collision
 		public TileCollision GetCollision(Vector3 pos)
@@ -190,8 +300,6 @@ namespace Foregunners
             return result;
         }
         
-        public virtual void Update() { }
-
         public Vector2 Center
         {
             get { return new Vector2(Width * Tile.FOOT / 2, Height * Tile.FOOT / 2); }
@@ -200,10 +308,10 @@ namespace Foregunners
         public void Draw(SpriteBatch spriteBatch)
         {
 			Vector3 topLeft = Registry.OverlayToWorld(new Point(0, 0));
-			Vector3 topRight = Registry.OverlayToWorld(new Point(Registry.Viewport.Width, 0));
-			Vector3 botLeft = Registry.OverlayToWorld(new Point(0, Registry.Viewport.Height));
-			Vector3 botRight = Registry.OverlayToWorld(new Point(Registry.Viewport.Width, 
-				Registry.Viewport.Height));
+			Vector3 topRight = Registry.OverlayToWorld(new Point(Main.Viewport.Width, 0));
+			Vector3 botLeft = Registry.OverlayToWorld(new Point(0, Main.Viewport.Height));
+			Vector3 botRight = Registry.OverlayToWorld(new Point(Main.Viewport.Width, 
+				Main.Viewport.Height));
 
 			int xStart = Tile.GetArrayXY(Math.Min(
 				Math.Min(topLeft.X, topRight.X), Math.Min(botLeft.X, botRight.X))) - 2;
@@ -243,113 +351,6 @@ namespace Foregunners
 		{
 			return Color.Lerp(color, Registry.DarkPurple,
 				1.0f - pos.Z / (Depth * Tile.DEPTH));
-		}
-
-		private void LoadTiles(string mapName)
-		{
-			int i = 0;
-			string root = "Content/Maps/" + mapName + "/";
-			string path = root + mapName + i + ".txt";
-			List<string> paths = new List<string>();
-
-			Console.WriteLine("populating paths");
-
-			while (System.IO.File.Exists(path))
-			{
-				paths.Add(path);
-				path = root + mapName + (++i) + ".txt";
-			}
-
-			for (int z = 0; z < paths.Count; z++)
-			{
-				int width;
-				List<string> Lines = new List<string>();
-
-				using (System.IO.StreamReader reader = new System.IO.StreamReader(paths[z]))
-				{
-					string line = reader.ReadLine();
-					width = line.Length;
-					while (line != null)
-					{
-						Lines.Add(line);
-						if (line.Length != width)
-							throw new NotSupportedException(string.Format(
-								"The length of line {0} is different from all preceding lines.", Lines.Count));
-						line = reader.ReadLine();
-					}
-				}
-
-				if (Tiles == null)
-					Tiles = new Tile[width, Lines.Count, paths.Count];
-
-				for (int y = 0; y < Height; ++y)
-				{
-					for (int x = 0; x < Width; ++x)
-					{
-						char TileType = Lines[y][x];
-						Tiles[x, y, z] = LoadTile(TileType, x, y, z);
-					}
-				}
-			}
-		}
-
-		private Tile LoadTile(char icon, int x, int y, int z)
-		{
-			Vector3 minCorner = new Vector3(x * Tile.FOOT, y * Tile.FOOT, z * Tile.DEPTH);
-			Color BoneWhite = new Color(100, 90, 80);
-			//BoneWhite = Color.Lerp(Color.LightGray, Color.MonoGameOrange, 0.1f);
-
-			switch (icon)
-			{
-				case '.':
-				case '-':
-					return new Tile();
-
-				case '#':
-				case '_':
-				case '"':
-				case '~':
-					return new Tile(minCorner, TileCollision.Solid, TileStyle.Flat, BoneWhite);
-
-				case '0':
-				case 'T':
-					return new Tile(minCorner, TileCollision.Landing, TileStyle.Flat | TileStyle.Slope, BoneWhite);
-					
-				case '1':
-					return new TileSlope(minCorner, new Point(1, -1), TileStyle.Slope, BoneWhite);
-				case '2':
-					return new TileSlope(minCorner, new Point(1, 0), TileStyle.Slope, BoneWhite);
-				case '3':
-					return new TileSlope(minCorner, new Point(1, 1), TileStyle.Slope, BoneWhite);
-				case '4':
-					return new TileSlope(minCorner, new Point(0, 1), TileStyle.Slope, BoneWhite);
-				case '5':
-					return new TileSlope(minCorner, new Point(-1, 1), TileStyle.Slope, BoneWhite);
-				case '6':
-					return new TileSlope(minCorner, new Point(-1, 0), TileStyle.Slope, BoneWhite);
-				case '7':
-					return new TileSlope(minCorner, new Point(-1, -1), TileStyle.Slope, BoneWhite);
-				case '8':
-					return new TileSlope(minCorner, new Point(0, -1), TileStyle.Slope, BoneWhite);
-					
-				case '@':
-					Player player = new Player(minCorner + new Vector3(Tile.Origin, Tile.DEPTH));
-
-					Registry.Avatar = player;
-					Registry.UnitMan.Add(player);
-
-					return new Tile();
-
-				case 'x':
-					Registry.UnitMan.Add(new Beetle(minCorner + new Vector3(
-						Tile.Origin, Tile.DEPTH * 2)));
-					return new Tile();
-
-				default:
-					throw new NotSupportedException(string.Format(
-						"Unsupported character type {0} at {1}, {2}, depth of {3}.",
-						icon, x, y, z));
-			}
 		}
 	}
 }

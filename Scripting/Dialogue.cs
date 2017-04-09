@@ -25,7 +25,6 @@ namespace Foregunners.Scripting
 
 		public override void Update()
 		{
-			// Console.Write(Text[Index]);
 			Index++;
 			if (Index == Text.Length)
 			{

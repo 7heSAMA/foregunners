@@ -68,6 +68,7 @@
   <ItemGroup>
     <Compile Include="Scripting\Cinema.cs" />
     <Compile Include="Scripting\Dialogue.cs" />
+    <Compile Include="Scripting\GUI.cs" />
     <Compile Include="Scripting\Scenario.cs" />
     <Compile Include="Scripting\ScriptRunner.cs" />
     <Compile Include="Scripting\Spawn.cs" />

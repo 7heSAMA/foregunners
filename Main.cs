@@ -11,7 +11,6 @@ namespace Foregunners
     // unspecified accessors! 
 
 	// TODO: 
-	// Merge AutoBox and ManualBox using MakeBox factory pattern 
 	// Remove/merge superfluous classes - partially complete 
 	// Reimplement binary map files 
 	// Update UI - consider starting with tooltip TODO, but there may be a better way 
@@ -67,18 +66,15 @@ namespace Foregunners
         protected override void LoadContent()
         {
             Batch = new SpriteBatch(GraphicsDevice);
-
-			Registry.LoadGameServices(GraphicsDevice, Content, Services);
-        }
+			Registry.LoadGameServices(GraphicsDevice, Content);
+			Registry.LoadLevel("arena", "DemoII");
+		}
 
         /// <summary>
         /// UnloadContent will be called once per game and is the place to unload
         /// game-specific content.
         /// </summary>
-        protected override void UnloadContent()
-        {
-            // Unload any non ContentManager content here
-        }
+        protected override void UnloadContent() { }
 
         /// <summary>
         /// Allows the game to run logic such as updating the world,
@@ -92,7 +88,7 @@ namespace Foregunners
 
 			Camera.Pos = new Vector2(Registry.Avatar.Position.X, Registry.Avatar.Position.Y);
 
-			TipSorter.Update();
+			GUI.Update();
 
 			Registry.Update(gameTime);
 
@@ -119,7 +115,7 @@ namespace Foregunners
 
 			// Draw GUI 
 			Batch.Begin();
-			TipSorter.Draw(Batch);
+			GUI.Draw(Batch);
 			Batch.End();
 
             base.Draw(gameTime);

@@ -13,7 +13,7 @@ namespace Foregunners
 	{
 		public static T Load<T>(string path)
 		{
-			StreamReader reader = new StreamReader(path);
+			StreamReader reader = new StreamReader("Content/Scenes/" + path + ".yaml");
 
 			DeserializerBuilder data = new DeserializerBuilder();
 			data.WithNamingConvention(new PascalCaseNamingConvention());

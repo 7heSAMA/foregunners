@@ -159,10 +159,10 @@ namespace Foregunners
 
 	public class Tooltip : IComparable<Tooltip>
     {
-        public const float LINEWIDTH = 2.0f;
+		#region fields and properties
+		public const float LINEWIDTH = 2.0f;
         
         protected List<TextBox> Lines;
-        protected IWorld Target;
 
         protected Vector2 TitleSize;
         protected Vector2 BodySize;
@@ -206,18 +206,66 @@ namespace Foregunners
                     (int)Math.Floor(Size.Y));
             }
         }
-        
-        public Tooltip(IWorld target, TextBox title)
+		#endregion
+
+		#region child implementations
+		private class FixedTip : Tooltip
+		{
+			public Vector3 Position { get; private set; }
+
+			public FixedTip(Vector3 pos, TextBox title)
+				: base(title)
+			{
+				Position = pos;
+			}
+
+			public override void Draw(SpriteBatch batch)
+			{
+				Bulb = Registry.WorldOnOverlay(Position);
+				base.Draw(batch);
+			}
+		}
+
+		private class MobileTip : Tooltip
+		{
+			protected IWorld Target;
+
+			public MobileTip(IWorld target, TextBox title)
+				: base(title)
+			{
+				Target = target;
+			}
+
+			public override void Draw(SpriteBatch batch)
+			{
+				Bulb = Registry.WorldOnOverlay(Target.Position);
+				base.Draw(batch);
+			}
+		}
+		#endregion
+
+		#region constructors
+		public static Tooltip MakeTip(Vector3 pos, TextBox title)
+		{
+			return new FixedTip(pos, title);
+		}
+
+		public static Tooltip MakeTip(IWorld target, TextBox title)
+		{
+			return new MobileTip(target, title);
+		}
+
+        protected Tooltip(TextBox title)
         {
-            Target = target;
             Lines = new List<TextBox>();
             Lines.Add(title);
 
             TitleSize = Lines[0].Size;
             Dropdown = false;
         }
+		#endregion
 
-        public void AddEntry(TextBox toAdd)
+		public void AddEntry(TextBox toAdd)
         {
             Lines.Add(toAdd);
             MeasureBody();
@@ -257,9 +305,8 @@ namespace Foregunners
             ScreenPos = Bulb + new Vector2(32, yPos);
         }
 
-        public void Draw(SpriteBatch batch)
+        public virtual void Draw(SpriteBatch batch)
 		{
-			Bulb = Registry.WorldOnOverlay(Target.Position);
 			Recalc();
 
 			// draw bounding box for gui checks 
@@ -300,12 +347,12 @@ namespace Foregunners
         }
     }
 
-    public static class TipSorter
+    public static class GUI
     {
         private static List<Tooltip> Elements;
         private static Dictionary<Rectangle, List<Tooltip>> AreaSets;
 
-        static TipSorter()
+        static GUI()
         {
             Elements = new List<Tooltip>();
             AreaSets = new Dictionary<Rectangle, List<Tooltip>>();

@@ -370,7 +370,7 @@ namespace Foregunners
         public static void Add(Tooltip toAdd)
         {
             Elements.Add(toAdd);
-            Sort();
+            //Sort();
         }
 
         // should only recalculate when a tooltip goes on/offline 

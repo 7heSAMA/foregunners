@@ -75,7 +75,6 @@ namespace Foregunners
             Managers.Add(MunMan);
 
 			Runner = new Scripting.ScriptRunner();
-			LoadPaths();
 
 			// Load sprite/typography data 
             Header = Content.Load<SpriteFont>("Header");
@@ -91,16 +90,31 @@ namespace Foregunners
         
 		public static void LoadPaths()
 		{
-			string[] levels = Directory.GetDirectories("Content/Maps");
-			string[] layouts = Directory.GetFiles("Content/Scenes");
+			string[] levelPaths = Directory.GetDirectories("Content\\Maps");
+			string[] layoutPaths = Directory.GetFiles("Content\\Scenes");
+
+			Tooltip levels = Tooltip.MakeTip(new Vector3(Tile.Origin * Stage.Width, 0.0f),
+				TextBox.Make("Levels", Header));
+
+			Tooltip layouts = Tooltip.MakeTip(new Vector3(Tile.Origin * Stage.Width - Tile.Print, 0.0f),
+				TextBox.Make("Layouts", Header));
 
 			Console.WriteLine("Levels:");
-			foreach (string lev in levels)
-				Console.WriteLine("    " + lev);
+			foreach (string path in levelPaths)
+			{
+				Console.WriteLine("    " + path);
+				levels.AddEntry(TextBox.Make(path, Body));
+			}
+
 			Console.WriteLine("Layouts:");
-			foreach (string lay in layouts)
-				Console.WriteLine("    " + lay);
-			
+			foreach (string path in layoutPaths)
+			{
+				Console.WriteLine("    " + path);
+				layouts.AddEntry(TextBox.Make(path, Body));
+			}
+
+			GUI.Add(levels);
+			GUI.Add(layouts);
 		}
 
 		public static void LoadLevel(string mapPath, string scenePath)
@@ -205,10 +219,14 @@ namespace Foregunners
             flatPos = new Vector2(
                 (float)Math.Cos(angle),
                 (float)Math.Sin(angle)) * len;
-			
+
 			// Equivalent of calculating sprite spin based on z/perspective 
-			flatPos.Y -= pos.Z * (float)(Math.Cos(Camera.Perspective) * Math.Sin(Camera.Perspective));
-			flatPos *= Camera.Zoom;
+			flatPos.Y -= pos.Z * (float)Math.Sin(Camera.Perspective);
+
+			Vector3 lens = Camera.Lens();
+
+			flatPos.X *= lens.X;
+			flatPos.Y *= lens.Y;
 
             flatPos.X += Main.Viewport.Width / 2;
             flatPos.Y += Main.Viewport.Height / 2;

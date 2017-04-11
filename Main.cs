@@ -68,6 +68,7 @@ namespace Foregunners
             Batch = new SpriteBatch(GraphicsDevice);
 			Registry.LoadGameServices(GraphicsDevice, Content);
 			Registry.LoadLevel("arena", "DemoII");
+			Registry.LoadPaths();
 		}
 
         /// <summary>

@@ -135,6 +135,43 @@ namespace Foregunners
 						icon, x, y, z));
 			}
 		}
+
+        protected void LoadContextSource()
+        {
+            for (int z = 0; z < Depth; z++)
+            {
+                for (int y = 0; y < Height; y++)
+                {
+                    for (int x = 0; x < Width; x++)
+                    {
+						if (Tiles[x, y, z].Sprites == null)
+							continue;
+
+                        TileNeighbors hood = TileNeighbors.None;
+						TileStyle style = Tiles[x, y, z].Style;
+						
+						if ((GetStyle(x - 1, y - 1, z) & style) != TileStyle.None)
+							hood = hood | TileNeighbors.TopLeft;
+						if ((GetStyle(x, y - 1, z) & style) != TileStyle.None)
+							hood = hood | TileNeighbors.TopCenter;
+						if ((GetStyle(x + 1, y - 1, z) & style) != TileStyle.None)
+							hood = hood | TileNeighbors.TopRight;
+						if ((GetStyle(x - 1, y, z) & style) != TileStyle.None)
+							hood = hood | TileNeighbors.CenterLeft;
+						if ((GetStyle(x + 1, y, z) & style) != TileStyle.None)
+							hood = hood | TileNeighbors.CenterRight;
+						if ((GetStyle(x - 1, y + 1, z) & style) != TileStyle.None)
+							hood = hood | TileNeighbors.BottomLeft;
+						if ((GetStyle(x, y + 1, z) & style) != TileStyle.None)
+							hood = hood | TileNeighbors.BottomCenter;
+						if ((GetStyle(x + 1, y + 1, z) & style) != TileStyle.None)
+							hood = hood | TileNeighbors.BottomRight;
+						
+						Tiles[x, y, z].LoadContextualSource(hood);
+                    }
+                }
+            }
+        }
 		#endregion
 
 		#region Bounds and Collision
@@ -202,13 +239,6 @@ namespace Foregunners
         }
 
         /// <summary>
-        /// modify to take input pos to vary gravity? 
-        /// convert to V3 for horizontal/vertical forces? 
-        /// </summary>
-        public float Gravity
-        { get { return -5.0f; } }
-
-        /// <summary>
         /// Width of the level, in Tiles.
         /// </summary>
         public int Width
@@ -233,43 +263,6 @@ namespace Foregunners
         }
         #endregion
 
-        protected void LoadContextSource()
-        {
-            for (int z = 0; z < Depth; z++)
-            {
-                for (int y = 0; y < Height; y++)
-                {
-                    for (int x = 0; x < Width; x++)
-                    {
-						if (Tiles[x, y, z].Sprites == null)
-							continue;
-
-                        TileNeighbors hood = TileNeighbors.None;
-						TileStyle style = Tiles[x, y, z].Style;
-						
-						if ((GetStyle(x - 1, y - 1, z) & style) != TileStyle.None)
-							hood = hood | TileNeighbors.TopLeft;
-						if ((GetStyle(x, y - 1, z) & style) != TileStyle.None)
-							hood = hood | TileNeighbors.TopCenter;
-						if ((GetStyle(x + 1, y - 1, z) & style) != TileStyle.None)
-							hood = hood | TileNeighbors.TopRight;
-						if ((GetStyle(x - 1, y, z) & style) != TileStyle.None)
-							hood = hood | TileNeighbors.CenterLeft;
-						if ((GetStyle(x + 1, y, z) & style) != TileStyle.None)
-							hood = hood | TileNeighbors.CenterRight;
-						if ((GetStyle(x - 1, y + 1, z) & style) != TileStyle.None)
-							hood = hood | TileNeighbors.BottomLeft;
-						if ((GetStyle(x, y + 1, z) & style) != TileStyle.None)
-							hood = hood | TileNeighbors.BottomCenter;
-						if ((GetStyle(x + 1, y + 1, z) & style) != TileStyle.None)
-							hood = hood | TileNeighbors.BottomRight;
-						
-						Tiles[x, y, z].LoadContextualSource(hood);
-                    }
-                }
-            }
-        }
-		
         public Vector3 CastMousePos(Vector3 mouse, Vector3 dir)
         {
             Vector3 result = mouse;
@@ -345,12 +338,6 @@ namespace Foregunners
 						if (z == GroundLevel)
 							Tile.DrawBG(spriteBatch, x, y, z);
 					}
-		}
-
-		public Color LerpColor(Color color, Vector3 pos)
-		{
-			return Color.Lerp(color, Registry.DarkPurple,
-				1.0f - pos.Z / (Depth * Tile.DEPTH));
 		}
 	}
 }

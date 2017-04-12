@@ -99,8 +99,52 @@ namespace Foregunners
 		}
 		#endregion
 
+		#region logic and drawing
+		public void Update(float cycleTime)
+		{
+			LastPos = Position;
+			OnGround = false;
+			OnWall = false;
+
+			if (Registry.Stage != null)
+				RunPhysics(cycleTime);
+			else
+			{
+				Position += Velocity * cycleTime;
+				if (Position.Z < 0 + Depth / 2)
+				{
+					OnGround = true;
+					Position = new Vector3(Position.X, Position.Y, 0 + Depth / 2);
+					Velocity = new Vector3(Velocity.X, Velocity.Y, -Velocity.Z * Elasticity);
+				}
+			}
+
+			if (Gravitized)
+				Velocity += new Vector3(Vector2.Zero, Registry.Gravity);
+			Velocity *= Aero;
+
+			RunLogic(cycleTime);
+        }
+
+        protected abstract void RunLogic(float cycleTime);
+
+        private void RunPhysics(float cycleTime)
+        {
+			RunAxisFull(cycleTime, "Z");
+			RunAxisFull(cycleTime, "Y");
+			RunAxisFull(cycleTime, "X");
+		}
+        
+		public void Push(Vector2 dir)
+		{
+			Velocity += new Vector3(dir, 0);
+		}
+
+        public abstract void Draw(SpriteBatch batch);
+		#endregion
+		
 		#region physics
-		protected virtual void RunAxisFull(float cycleTime, string xyz)
+		private void RunAxisFull(float cycleTime, string xyz)
 		{
 			int size = Foot;
 			if (xyz == "Z")
@@ -113,8 +157,8 @@ namespace Foregunners
 				(float)axis.GetValue(Position) + (float)axis.GetValue(Velocity) * cycleTime);
 			Position = (Vector3)pos;
 
-			int[] min = tileRange(Bounds.Min);
-			int[] max = tileRange(Bounds.Max);
+			int[] min = TileRange(Bounds.Min);
+			int[] max = TileRange(Bounds.Max);
 
 			for (int z = min[2]; z <= max[2]; z++)
 				for (int y = min[1]; y <= max[1]; y++)
@@ -166,52 +210,13 @@ namespace Foregunners
 						}
 		}
 
-		protected int[] tileRange(Vector3 pos)
+		protected int[] TileRange(Vector3 pos)
 		{
 			return new int[3] {
 				Tile.GetArrayXY(pos.X),
 				Tile.GetArrayXY(pos.Y),
 				Tile.GetArrayZ(pos.Z) };
 		}
-		#endregion
-
-		#region logic and drawing
-		public void Update(float cycleTime)
-        {
-			if (Registry.Stage != null)
-				RunPhysics(cycleTime);
-			else
-			{
-				Position += Velocity;
-				Velocity *= Aero;
-			}
-
-            RunLogic(cycleTime);
-        }
-
-        protected abstract void RunLogic(float cycleTime);
-
-        private void RunPhysics(float cycleTime)
-        {
-            LastPos = Position;
-            OnGround = false;
-            OnWall = false;
-
-			RunAxisFull(cycleTime, "Z");
-			RunAxisFull(cycleTime, "Y");
-			RunAxisFull(cycleTime, "X");
-
-            Velocity *= Aero;
-            if (Gravitized)
-                Velocity += new Vector3(Vector2.Zero, Registry.Stage.Gravity);
-        }
-        
-		public void Push(Vector2 dir)
-		{
-			Velocity += new Vector3(dir, 0);
-		}
-
-        public abstract void Draw(SpriteBatch spriteBatch);
 		#endregion
 	}
 }

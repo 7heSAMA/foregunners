@@ -243,7 +243,7 @@ namespace Foregunners
 								Registry.Tilesheet,
 								oriPos,
 								source,
-								Registry.Stage.LerpColor(Fill, new Vector3(oriPos, scaler)),
+								Registry.LerpColor(Fill, new Vector3(oriPos, scaler)),
 								Sprites[subX, subY, subZ].Rotation,
 								Subtile.Origin,
 								1.0f,
@@ -278,7 +278,7 @@ namespace Foregunners
 						Registry.Tilesheet,
 						oriPos,
 						Subtile.Smooth,
-						Registry.Stage.LerpColor(new Color(100, 90, 80), new Vector3(oriPos, scaler)),
+						Registry.LerpColor(new Color(100, 90, 80), new Vector3(oriPos, scaler)),
 						0.0f,
 						Subtile.Origin,
 						1.0f,
@@ -358,6 +358,7 @@ namespace Foregunners
 								(x == DIVS - 1 && Registry.Stage.GetStyle(mapX + 1, mapY, mapZ) == TileStyle.None)))
 								Sprites[x, y, z - 1] = Sprites[x, y, z];
 							
+							// Remove extra sprites above slope line 
 							Sprites[x, y, z] = new Subtile();
 						}
 					}

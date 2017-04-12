@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
@@ -13,18 +12,18 @@ namespace Foregunners
 {
     public class Player : Unit
     {
-        private TurretMount Turret;
+        private MountedTurret Turret;
 
         public Player(Vector3 pos)
             : base("Avatar", 48, 32, 0.9f, 0.0f)
         {
-            Active = true;
             Position = pos;
             LastPos = pos;
+            Active = true;
 
             Chassis = new Sprite(this);
-            Turret = new TurretMount(this, MunManager.Pulse, 24, 0.1f, 0.05f);
-
+            Turret = new MountedTurret(this, Specs.Grenade, 24, 0.1f, 0.05f);
+			
             Tipper();
         }
 
@@ -74,7 +73,7 @@ namespace Foregunners
 
         public override void Draw(SpriteBatch batch)
         {
-            Chassis.Draw(batch);
+			base.Draw(batch);
 
 			// Reticle calc: 
 			Vector2 castReticle = Registry.CalcRenderPos(Registry.MouseCast + new Vector3(0, 0, Depth / 2));

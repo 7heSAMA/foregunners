@@ -12,13 +12,13 @@ namespace Foregunners
     public static class Camera
     {
 		public static float _zoom = 1.0f;
-		public static float _perspective = 0.0f;
+		public static float _perspective = MathHelper.Pi / 4.0f;
 		private static float _rotation = 0.0f; 
 		private static Vector2 _pos = Vector2.Zero; // TODO: change this to a V3 for height mapping 
         private static Matrix _transform;
 
 		// Minimum (0f) indicates an overhead view, 
-		// maximum (Pi / 4f or ~0.78539) indicates a 3/4 isometric view
+		// maximum (Pi / 4f or ~0.785) indicates a 3/4 isometric view
 		public static float Perspective
 		{
 			get { return _perspective; }

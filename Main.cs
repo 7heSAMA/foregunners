@@ -67,8 +67,9 @@ namespace Foregunners
         {
             Batch = new SpriteBatch(GraphicsDevice);
 			Registry.LoadGameServices(GraphicsDevice, Content);
-			Registry.LoadLevel("arena", "DemoII");
-			Registry.LoadPaths();
+
+			Registry.Avatar = new Player(Vector3.Zero);
+			Registry.UnitMan.Add(Registry.Avatar);
 		}
 
         /// <summary>
@@ -86,6 +87,9 @@ namespace Foregunners
         {
             if (Keyboard.GetState().IsKeyDown(Keys.Escape))
 				Exit();
+			
+			if (Registry.KeyJustPressed(Keys.K))
+				Registry.LoadLevel("arena", "DemoII");
 
 			Camera.Pos = new Vector2(Registry.Avatar.Position.X, Registry.Avatar.Position.Y);
 

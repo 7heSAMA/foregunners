@@ -254,7 +254,7 @@ namespace Foregunners
 		{
 			return new MobileTip(target, title);
 		}
-
+		
         protected Tooltip(TextBox title)
         {
             Lines = new List<TextBox>();

@@ -66,6 +66,7 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Physics\Munition.cs" />
     <Compile Include="Scripting\Cinema.cs" />
     <Compile Include="Scripting\Dialogue.cs" />
     <Compile Include="Scripting\GUI.cs" />
@@ -74,6 +75,7 @@
     <Compile Include="Scripting\Spawn.cs" />
     <Compile Include="Scripting\Tracker.cs" />
     <Compile Include="Scripting\Zone.cs" />
+    <Compile Include="Units\Jackal.cs" />
     <Compile Include="Util\YamLoader.cs" />
     <Compile Include="World\Interfaces.cs" />
     <Compile Include="Physics\Manager.cs" />

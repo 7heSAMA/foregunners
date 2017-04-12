@@ -131,5 +131,10 @@ namespace Foregunners
                 }
             }
         }
-    }
+
+		public override void Draw(SpriteBatch batch)
+		{
+			Chassis.Draw(batch);
+		}
+	}
 }

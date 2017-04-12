@@ -10,9 +10,10 @@ namespace Foregunners
 {
     public class Sprite : IVisible
     {
-		// implement factory pattern for array settings - 
-		// either [,,] for stacked complex flat sprites or 
-		// simply [] for stacks flat sprites 
+		//	Todo:
+		//	implement factory pattern for array settings - 
+		//	either [,,] for stacked complex flat sprites or 
+		//	simply [] for stacks flat sprites 
 
 		public static int Gap = Tile.DEPTH / 6;
         protected IReal Parent { get; private set; }
@@ -35,7 +36,7 @@ namespace Foregunners
         public void Draw(SpriteBatch batch)
         {
             Vector3 pos = Parent.Position;
-			// Position refers to the centerpos so offset
+			// Position refers to the center of the sprite, so apply an offset
 			pos.Z -= Gap * 2;
 			
             foreach (Rectangle rect in Textures)
@@ -44,7 +45,7 @@ namespace Foregunners
 					Registry.Spritesheet,
 					Registry.CalcRenderPos(pos),
 					rect,
-					Registry.Stage.LerpColor(Color.White, Parent.Position), 
+					Registry.LerpColor(Color.White, Parent.Position), 
 					Parent.Facing, new Vector2(16),
                     2.0f, SpriteEffects.None, Registry.GetDepth(pos.Z));
                 

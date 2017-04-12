@@ -55,9 +55,7 @@ namespace Foregunners
 
             float AngleToPlayer = (float)Math.Atan2(avaPos.Y - pos.Y, avaPos.X - pos.X);
             Aim = Gizmo.TurnToAngle(AngleToPlayer, Aim, 0.15f);
-
-            Specs Wep = MunManager.Pulse;
-
+			
             switch (Current)
             {
                 case State.Travel:
@@ -107,9 +105,9 @@ namespace Foregunners
                             Vector3 mv = new Vector3(
                                 (float)Math.Cos(Aim),
                                 (float)Math.Sin(Aim),
-                                0.0f) * Wep.MuzzleVel;
+                                0.0f) * Specs.Pulse.MuzzleVel;
 
-                            Registry.MunMan.Activate(this, Position, mv, Wep);
+                            Munition.Fire(this, Position, mv, Specs.Pulse);
                             BurstCount -= 1;
 
                             if (BurstCount > 0)
@@ -137,11 +135,6 @@ namespace Foregunners
                     break;
             }
             base.RunLogic(cycleTime);
-        }
-
-        public override void Draw(SpriteBatch batch)
-        {
-            Chassis.Draw(batch);
         }
     }
 }

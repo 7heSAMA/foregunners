@@ -30,9 +30,9 @@ namespace Foregunners
 		public static Level Stage { get; private set; }
 		private static List<IManager> Managers;
 
+		public static Manager<Munition> MunMan;
 		public static ParticleManager PartMan;
 		public static Manager<Unit> UnitMan;
-		public static MunManager MunMan;
 
 		public static Player Avatar { get; set; }
 
@@ -51,9 +51,20 @@ namespace Foregunners
 		// Scripting 
 		public static Scripting.ScriptRunner Runner { get; private set; }
 		public static Random RNG { get; private set; }
+
+		/// <summary>
+		/// modify to take input pos to vary gravity? 
+		/// convert to V3 for horizontal/vertical forces? 
+		/// </summary>
+		public static float Gravity
+		{ get { return -5.0f; } }
 		#endregion
 
-		#region Constructors and initializers 
+		static float wave = 6.0f;
+		static float timer = 0.0f;
+		static int count = 3;
+
+		#region initializers 
 		public static void LoadGameServices(GraphicsDevice graphics, ContentManager content)
         {
 			// Initialize stuff
@@ -68,7 +79,7 @@ namespace Foregunners
 
             PartMan = new ParticleManager();
             UnitMan = new Manager<Unit>();
-            MunMan = new MunManager();
+            MunMan = new Manager<Munition>();
 
             Managers.Add(PartMan);
             Managers.Add(UnitMan);
@@ -87,8 +98,18 @@ namespace Foregunners
             Blank = new Texture2D(graphics, 1, 1, false, SurfaceFormat.Color);
             Blank.SetData(new[] { Color.White });
         }
-        
-		public static void LoadPaths()
+
+		public static void LoadLevel(string mapPath, string scenePath)
+		{
+			Stage = new Level(mapPath);
+			Stage.Initialize();
+
+			Scripting.Scenario scene = YamLoader.Load<Scripting.Scenario>(scenePath);
+			Runner.BuildScene(scene);
+			//LoadPathsGUI();
+		}
+		
+		public static void LoadPathsGUI()
 		{
 			string[] levelPaths = Directory.GetDirectories("Content\\Maps");
 			string[] layoutPaths = Directory.GetFiles("Content\\Scenes");
@@ -116,15 +137,6 @@ namespace Foregunners
 			GUI.Add(levels);
 			GUI.Add(layouts);
 		}
-
-		public static void LoadLevel(string mapPath, string scenePath)
-		{
-			Stage = new Level(mapPath);
-			Stage.Initialize();
-
-			Scripting.Scenario scene = YamLoader.Load<Scripting.Scenario>(scenePath);
-			Runner.BuildScene(scene);
-		}
 		#endregion
 
 		#region Draw and Update
@@ -141,7 +153,27 @@ namespace Foregunners
 
 			// Run the game
 			Runner.Update();
-			
+
+			// TEMPORARY wave logic 
+			timer += CycleTime / 60.0f;
+
+			if (Stage != null && timer > wave)
+			{
+				Console.WriteLine("Starting wave");
+				int index = 0;
+				for (int n = 0; n < count; n++)
+				{
+					Vector3 pos = Runner.Zones[index].RandomOnGround();
+					UnitMan.Add(new Beetle(pos));
+					index = (index + 1) % Runner.Zones.Count;
+					Console.WriteLine("Injected");
+				}
+
+				timer = 0.0f;
+				wave += 3.0f;
+				count++;
+			}
+
             foreach (IManager man in Managers)
                 man.RunSim(CycleTime);
 
@@ -286,10 +318,19 @@ namespace Foregunners
                 return Stage.CastMousePos(OverlayToWorld(Mouse.GetState().Position), vel);
             }
 		}
+
+		public static Color LerpColor(Color color, Vector3 pos)
+		{
+			if (Stage != null)
+				return Color.Lerp(color, Registry.DarkPurple,
+					1.0f - pos.Z / (Stage.Depth * Tile.DEPTH));
+			else
+				return Color.Lerp(color, DarkPurple, 1.0f - pos.Z / (Tile.DEPTH * 4));
+		}
 		#endregion
 
-        #region Drawing
-        public static void DrawQuad(SpriteBatch spriteBatch, Vector2 position, Color color, float rotation,
+		#region Drawing
+		public static void DrawQuad(SpriteBatch spriteBatch, Vector2 position, Color color, float rotation,
             Vector2 scale, float depth, bool centered)
         {
             Vector2 origin;

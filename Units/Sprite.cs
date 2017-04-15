@@ -45,7 +45,7 @@ namespace Foregunners
 					Registry.Spritesheet,
 					Registry.CalcRenderPos(pos),
 					rect,
-					Registry.LerpColor(Color.White, Parent.Position), 
+					Registry.LerpColor(Color.White, pos.Z), 
 					Parent.Facing, new Vector2(16),
                     2.0f, SpriteEffects.None, Registry.GetDepth(pos.Z));
                 

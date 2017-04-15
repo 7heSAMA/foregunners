@@ -97,15 +97,9 @@ namespace Foregunners
 				Rotation, TurnSpeed);
 		}
 
-		public void Fire()
+		public void Trigger()
 		{
-			Vector3 mv = new Vector3(
-				new Vector2((float)Math.Cos(Rotation), (float)Math.Sin(Rotation))
-					* (float)Math.Cos(Elevation),
-				(float)Math.Sin(Elevation))
-				* Specs.Bullet.MuzzleVel;
-
-			Munition.Fire(Wielder, Offset, mv, Payload);
+			Munition.Fire(Wielder, Offset, Rotation, Elevation, Payload);
 		}
 	}
 }

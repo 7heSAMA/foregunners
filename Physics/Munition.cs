@@ -15,7 +15,7 @@ namespace Foregunners
 		public float MuzzleVel { get; private set; }
 		public int Damage { get; private set; }
 
-		public float Drag { get; private set; } = 1.0f;
+		public float Aero { get; private set; } = 1.0f;
 		public bool Gravitized { get; private set; } = false;
 		public bool Complex { get; private set; } = false;
 		public bool Bouncy { get; private set; } = false;
@@ -34,7 +34,7 @@ namespace Foregunners
 		static Specs()
 		{
 			Shrapnel = new Specs(Munition.Cat.KE, 25.0f, 0.65f, 2);
-			Grenade = new Specs(Munition.Cat.KE, 80.0f, 0.95f, true, true, 60, true, 3, 0.9f, 0, Shrapnel);
+			Grenade = new Specs(Munition.Cat.KE, 40.0f, 0.95f, true, true, 60, true, 3, 0.9f, 0, Shrapnel);
 			Bullet = new Specs(Munition.Cat.KE, 40.0f, 40);
 			Pulse = new Specs(Munition.Cat.EM, 32.0f, 20);
 		}
@@ -47,18 +47,18 @@ namespace Foregunners
 			Damage = dam;
 		}
 
-		public Specs(Munition.Cat enType, float mv, float drag, int dam)
+		public Specs(Munition.Cat enType, float mv, float aero, int dam)
 			: this(enType, mv, dam)
 		{
-			Drag = drag;
+			Aero = aero;
 		}
 
-		public Specs(Munition.Cat enType, float mv, float drag, bool grav, bool complex,
+		public Specs(Munition.Cat enType, float mv, float aero, bool grav, bool complex,
 			int dam, bool bouncy, int maxBounce, float elas, int subNum, Specs submun)
 		{
 			EnType = enType;
 			MuzzleVel = mv;
-			Drag = drag;
+			Aero = aero;
 			Gravitized = grav;
 			Complex = complex;
 			Damage = dam;
@@ -81,18 +81,34 @@ namespace Foregunners
 		protected Specs Specification;
 		protected IReal Shooter;
 		protected int Bounces;
-		
-		public static void Fire(IReal shooter, Vector3 pos, Vector3 mom, Specs spec)
+
+		public Munition() : base(2, 2) { }
+
+		public static void Fire(IReal shooter, Vector3 pos, float angle, float elevation, Specs spec)
 		{
-			Munition mun = new Munition(spec);
-			mun.Shoot(shooter, pos, mom);
-			Registry.MunMan.Add(mun);
+			// TODO: really wish this could be implemented in the manager somehow 
+			Munition toFire;
+			if (Registry.MunMan.Stored.Count > 0)
+				toFire = Registry.MunMan.Stored[0];
+			else
+				toFire = new Munition();
+			
+			toFire.Fire(shooter, pos, Gizmo.VectorFromAngles(angle, elevation, spec.MuzzleVel), spec);
+			Registry.MunMan.Add(toFire);
 		}
 
-		protected Munition(Specs spec)
-			: base(2, 2, spec.Drag, spec.Elasticity, spec.Gravitized)
+		protected void Fire(IReal shooter, Vector3 pos, Vector3 vel, Specs spec)
 		{
+			Shooter = shooter;
+			Position = pos;
+			Velocity = vel;
 			Specification = spec;
+
+			Gravitized = spec.Gravitized;
+			Elasticity = spec.Elasticity;
+			Aero = spec.Aero;
+			Active = true;
+			Bounces = 0;
 		}
 
 		protected override void RunLogic(float cycleTime)
@@ -104,11 +120,12 @@ namespace Foregunners
 				if (Bounces >= Specification.MaxBounces)
 				{
 					Active = false;
-					for (int i = 0; i < 5; i++)
+					//TODO: readd particles 
+					/*for (int i = 0; i < 5; i++)
 						Registry.PartMan.Activate(Position, new Vector3(
 							(float)Registry.RNG.NextDouble() - 0.5f,
 							(float)Registry.RNG.NextDouble() - 0.5f,
-							(float)Registry.RNG.NextDouble()) * 15.0f);
+							(float)Registry.RNG.NextDouble()) * 15.0f);*/
 				}
 			}
 
@@ -126,14 +143,6 @@ namespace Foregunners
 					Active = false;
 				}
 			}
-		}
-
-		public void Shoot(IReal shooter, Vector3 pos, Vector3 mom)
-		{
-			Shooter = shooter;
-			Position = pos;
-			Velocity = mom;
-			Active = true;
 		}
 
 		public override void Draw(SpriteBatch spriteBatch)

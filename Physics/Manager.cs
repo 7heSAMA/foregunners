@@ -14,20 +14,21 @@ namespace Foregunners
         void DrawSprites(SpriteBatch spriteBatch);
     }
 
-    public class Manager<T> : IManager where T:SimFrame
-    {
-        public List<T> Stored { get; protected set; }
-        public List<T> Active { get; protected set; }
-        private List<SimFrame> ToCull;
+    public class Manager<T> : IManager where T : SimFrame
+	{
+		public List<T> Active { get; private set; }
+		public List<T> Stored { get; private set; }
+        private List<T> ToCull;
 
         public Manager()
         {
             Stored = new List<T>();
             Active = new List<T>();
-            ToCull = new List<SimFrame>();
+            ToCull = new List<T>();
         }
 
-        public void RunSim(float cycleTime)
+		#region Update and cull
+		public void RunSim(float cycleTime)
         {
             foreach (SimFrame s in Active)
                 s.Update(cycleTime);
@@ -36,7 +37,7 @@ namespace Foregunners
 
         private void Cull()
         {
-            foreach(SimFrame sim in Active)
+            foreach(T sim in Active)
                 if (!sim.Active)
                     ToCull.Add(sim);
 
@@ -48,42 +49,27 @@ namespace Foregunners
 
             ToCull.Clear();
         }
+		#endregion
 
-        public void Add(T sim)
-        {
-            Active.Add(sim);
-        }
+		#region adding/storing
+		/// <summary> Stores object. </summary>
+		public void Ready(T toStore)
+		{
+			Stored.Add(toStore);
+		}
 
-        public void DrawSprites(SpriteBatch spriteBatch)
+		/// <summary> Adds object. </summary>
+		public void Add(T toAdd)
+		{
+			Active.Add(toAdd);
+			Stored.Remove(toAdd);
+		}
+		#endregion
+
+		public void DrawSprites(SpriteBatch spriteBatch)
         {
             foreach (SimFrame sim in Active)
                 sim.Draw(spriteBatch);
-        }
-    }
-
-    public class ParticleManager : Manager<Particle>
-    {
-        public void Activate(Vector3 pos, Vector3 mom)
-        {
-            if (Stored.Count == 0)
-                Ready(10);
-
-            Stored[0].Activate(pos, mom, 100.0f);
-            Active.Add(Stored[0]);
-            Stored.Remove(Stored[0]);
-        }
-        
-        public void Wreck(Vector3 pos, Vector3 mom, float face, float angVel)
-        {
-            Ready(1);
-            Stored[0].ActWreck(face, angVel);
-            Activate(pos, mom);
-        }
-
-        private void Ready(int num)
-        {
-            for (int i = 0; i < num; i++)
-                Stored.Add(new Particle(0.99f, 0.9f));
         }
     }
 }

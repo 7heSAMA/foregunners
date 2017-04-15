@@ -10,15 +10,11 @@ namespace Foregunners
 {
     public static class Gizmo
     {
-        private static Random RNG;
+        private static readonly Random RNG = new Random();
+		public static readonly char[] NewLine = { '\r', '\n' };
 
-        static Gizmo()
-        {
-            RNG = new Random();
-        }
-
-        public static char[] NewLine = { '\r', '\n' };
-        public static string WrapWord(StringBuilder original, SpriteFont font, Rectangle bounds)
+		#region string helpers
+		public static string WrapWord(StringBuilder original, SpriteFont font, Rectangle bounds)
         {
             StringBuilder target = new StringBuilder();
             int lastWhiteSpace = 0;
@@ -40,16 +36,30 @@ namespace Foregunners
             }
             return target.ToString();
         }
+		#endregion
 
-        #region Maths
-        public static Vector3 RandomVector3(float minValue, float maxValue)
+		#region Vector math
+		public static Vector3 RandomVector3(float minValue, float maxValue)
         {
             return new Vector3((float)RNG.NextDouble() * (maxValue - minValue) + minValue,
                 (float)RNG.NextDouble() * (maxValue - minValue) + minValue,
                 (float)RNG.NextDouble() * (maxValue - minValue) + minValue);
         }
 
-        public static int WrapInt(int val, int min, int max)
+		public static Vector3 VectorFromAngles(float angle, float elevation, float vel)
+		{
+			float xyComponent = (float)Math.Cos(elevation);
+			float xMag = (float)Math.Cos(angle) * xyComponent;
+			float yMag = (float)Math.Sin(angle) * xyComponent;
+
+			float zMag = (float)Math.Sin(elevation);
+			
+			return new Vector3(xMag, yMag, zMag) * vel;
+		}
+		#endregion
+
+		#region Angle helper functions
+		public static int WrapInt(int val, int min, int max)
         {
             int range = max - min;
             while (val > max)

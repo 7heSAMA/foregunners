@@ -14,7 +14,7 @@ namespace Foregunners
     {
         private MountedTurret Turret;
 
-        public Player(Vector3 pos)
+		public Player(Vector3 pos)
             : base("Avatar", 48, 32, 0.9f, 0.0f)
         {
             Position = pos;
@@ -66,7 +66,7 @@ namespace Foregunners
 
             Turret.Target(target);
             if (Keyboard.GetState().IsKeyDown(Keys.Space))
-                Turret.Fire();
+                Turret.Trigger();
 			
             base.RunLogic(cycleTime);
         }

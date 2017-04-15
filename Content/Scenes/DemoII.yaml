@@ -43,6 +43,23 @@ Cameras:
 Trackers:
 - Sid: FollowAvatar
   Target: Avatar
+
+Lights:
+- X: 6
+  Y: 5
+  Radius: 5
+- X: 18
+  Y: 5
+  Radius: 5
+- X: 8
+  Y: 17
+  Radius: 5
+- X: 16
+  Y: 17
+  Radius: 5
+- X: 12
+  Y: 7
+  Radius: 5
   
 Zones:
 - Name: Three

@@ -13,14 +13,19 @@ namespace Foregunners
     {
         protected Tile[,,] Tiles;
 		private int GroundLevel;
-
-		private List<Vector3> Lights = new List<Vector3>();
-
+		public int[,] Lights { get; protected set; }
+		public int[,] Lightmap { get; protected set; }
+		
 		#region constructor and load methods
 		public Level(string map)
 		{
 			GroundLevel = 0;
 			LoadTiles(map);
+
+			Lightmap = new int[Width * Tile.DIVS, Height * Tile.DIVS];
+			for (int y = 0; y < Lightmap.GetLength(1); y++)
+				for (int x = 0; x < Lightmap.GetLength(0); x++)
+					Lightmap[x, y] = 0;
 		}
 
 		public void Initialize()
@@ -123,12 +128,7 @@ namespace Foregunners
 					Registry.UnitMan.Add(player);
 
 					return new Tile();
-
-				case 'x':
-					Registry.UnitMan.Add(new Beetle(minCorner + new Vector3(
-						Tile.Origin, Tile.DEPTH * 2)));
-					return new Tile();
-
+					
 				default:
 					throw new NotSupportedException(string.Format(
 						"Unsupported character type {0} at {1}, {2}, depth of {3}.",
@@ -261,9 +261,65 @@ namespace Foregunners
         {
             get { return Tiles.GetLength(2); }
         }
-        #endregion
+		#endregion
 
-        public Vector3 CastMousePos(Vector3 mouse, Vector3 dir)
+		#region lightmap
+		public void PlaceLight(int x, int y, int radius)
+		{
+			Point xRange = GetMinMaxSubtileRange(0, x, radius + 1);
+			Point yRange = GetMinMaxSubtileRange(1, y, radius + 1);
+
+			Vector2 center = new Vector2(x, y) * Tile.FOOT + Tile.Origin;
+
+			float fullDistance = radius * Tile.FOOT;
+			float duskDistance = fullDistance + Tile.FOOT;
+
+			float distance;
+			Vector2 subtilePos;
+
+			Console.WriteLine("Placing light at X: " + xRange + ", Y: " + yRange);
+
+			for (int subY = yRange.X; subY < yRange.Y; subY++)
+			{
+				for (int subX = xRange.X; subX < xRange.Y; subX++)
+				{
+					subtilePos = new Vector2(subX * Subtile.Quarter, subY * Subtile.Quarter) + Subtile.Origin;
+					distance = Vector2.Distance(center, subtilePos);
+					
+					if (distance < fullDistance)
+						Lightmap[subX, subY] = 2;
+					else if (distance < duskDistance)
+						Lightmap[subX, subY] = 1;
+				}
+			}
+
+			for (int subY = 0; subY < Lightmap.GetLength(1); subY++)
+			{
+				string line = "";
+				for (int subX = 0; subX < Lightmap.GetLength(0); subX++)
+				{
+					string sub = Lightmap[subX, subY].ToString();
+					if (sub == "0")
+						sub = " ";
+					line += sub;
+				}
+				//Console.WriteLine(line);
+			}
+		}
+
+		protected Point GetMinMaxSubtileRange(int dimension, int center, int radius)
+		{
+			int min = (center - radius) * Tile.DIVS;
+			// add one to max as we assume the light is at the center, not minimum, of the tile 
+			int max = (center + radius + 1) * Tile.DIVS;
+			
+			min = Math.Max(min, 0);
+			max = Math.Min(max, Tiles.GetLength(dimension) * Tile.DIVS);
+			return new Point(min, max);
+		}
+		#endregion
+
+		public Vector3 CastMousePos(Vector3 mouse, Vector3 dir)
         {
             Vector3 result = mouse;
 
@@ -292,18 +348,13 @@ namespace Foregunners
             
             return result;
         }
-        
-        public Vector2 Center
-        {
-            get { return new Vector2(Width * Tile.FOOT / 2, Height * Tile.FOOT / 2); }
-        }
 
-        public void Draw(SpriteBatch spriteBatch)
-        {
+		public void Draw(SpriteBatch spriteBatch)
+		{
 			Vector3 topLeft = Registry.OverlayToWorld(new Point(0, 0));
 			Vector3 topRight = Registry.OverlayToWorld(new Point(Main.Viewport.Width, 0));
 			Vector3 botLeft = Registry.OverlayToWorld(new Point(0, Main.Viewport.Height));
-			Vector3 botRight = Registry.OverlayToWorld(new Point(Main.Viewport.Width, 
+			Vector3 botRight = Registry.OverlayToWorld(new Point(Main.Viewport.Width,
 				Main.Viewport.Height));
 
 			int xStart = Tile.GetArrayXY(Math.Min(
@@ -325,7 +376,9 @@ namespace Foregunners
 				yStart = 0;
 			if (yEnd > Height)
 				yEnd = Height;
-			
+
+			int[,] lightArray = new int[Tile.DIVS, Tile.DIVS];
+
 			for (int z = 0; z < Depth; z++)
 				for (int y = yStart; y < yEnd; y++)
 					for (int x = xStart; x < xEnd; x++)

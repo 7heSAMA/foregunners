@@ -26,7 +26,7 @@ namespace Foregunners
         public float RechargeRate { get; protected set; }
         
         protected Sprite Chassis;
-
+		
         public Unit(string name, int foot, int height, float aero, float elasticity)
             : base(foot, height, aero, elasticity)
         {
@@ -96,8 +96,9 @@ namespace Foregunners
                     (float)Registry.RNG.NextDouble() - 0.5f,
                     (float)Registry.RNG.NextDouble() - 0.5f,
                     (float)Registry.RNG.NextDouble() * 0.1f) * 15.0f;
-            Registry.PartMan.Wreck(Position, rando, Facing, 
-                (float)Registry.RNG.NextDouble() * 0.25f);
+			// TODO: readd particles 
+			/*Particle.AddWreck(Position, rando, Facing, 
+                (float)Registry.RNG.NextDouble() * 0.25f);*/
         }
 
         protected override void RunLogic(float cycleTime)

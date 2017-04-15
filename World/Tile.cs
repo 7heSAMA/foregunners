@@ -100,6 +100,9 @@ namespace Foregunners
         { return Bounds(GetArrayXY(pos.X), GetArrayXY(pos.Y), GetArrayZ(pos.Z)); }
         #endregion
 		
+		public int MapX { get; protected set; }
+		public int MapY { get; protected set; }
+		public int MapZ { get; protected set; }
         public Vector3 Position { get; protected set; }
         public TileCollision Collision;
         public TileStyle Style;
@@ -116,7 +119,11 @@ namespace Foregunners
         public Tile(Vector3 pos, TileCollision coll, TileStyle style, Color fill)
         {
 			Position = pos;
-            Collision = coll;
+			MapX = GetArrayXY(pos.X);
+			MapY = GetArrayXY(pos.Y);
+			MapZ = GetArrayXY(pos.Z);
+
+			Collision = coll;
 			Style = style;
 			Sprites = new Subtile[DIVS, DIVS, DIVS];
 			Fill = fill;
@@ -218,7 +225,7 @@ namespace Foregunners
             Vector2 basePos = new Vector2(Position.X, Position.Y);
 			basePos += Subtile.Origin;
 			
-			// created here so we don't make 64 temp variables
+			// created here so we don't make 64 temp objects
 			Vector2 offset, oriPos;
 			Rectangle source;
 
@@ -228,6 +235,7 @@ namespace Foregunners
 				float scaler = Position.Z + ((subZ + 1) * DEPTH / DIVS);
 				float depth = Registry.GetDepth(scaler);
 				offset = Vector2.Zero;
+				Color color = Registry.LerpColor(new Color(100, 90, 80), Position.Z + subZ * (DEPTH / DIVS));
 
 				for (int subY = 0; subY < DIVS; subY++)
 				{
@@ -235,15 +243,18 @@ namespace Foregunners
 					for (int subX = 0; subX < DIVS; subX++)
 					{
 						source = Sprites[subX, subY, subZ].Source;
-						if (source != Rectangle.Empty)
+
+						if (source != Rectangle.Empty &&
+							Registry.Stage.Lightmap[MapX * DIVS + subX, MapY * DIVS + subY] > 0)
 						{
-							oriPos = 
+							oriPos =
 								Registry.CalcRenderPos(new Vector3(basePos + offset, scaler));
+
 							batch.Draw(
 								Registry.Tilesheet,
 								oriPos,
 								source,
-								Registry.LerpColor(Fill, new Vector3(oriPos, scaler)),
+								color,
 								Sprites[subX, subY, subZ].Rotation,
 								Subtile.Origin,
 								1.0f,
@@ -268,17 +279,22 @@ namespace Foregunners
 			float depth = Registry.GetDepth(scaler);
 			offset = Vector2.Zero;
 
+			Color color = Registry.LerpColor(new Color(100, 90, 80), z * DEPTH);
+
 			for (int subY = 0; subY < DIVS; subY++)
 			{
 				offset.X = 0;
 				for (int subX = 0; subX < DIVS; subX++)
 				{
+					if (Registry.Stage.Lightmap[x * DIVS + subX, y * DIVS + subY] == 0)
+						continue;
+
 					oriPos = basePos + offset + Registry.Spin * scaler;
 					batch.Draw(
 						Registry.Tilesheet,
 						oriPos,
 						Subtile.Smooth,
-						Registry.LerpColor(new Color(100, 90, 80), new Vector3(oriPos, scaler)),
+						color,
 						0.0f,
 						Subtile.Origin,
 						1.0f,
@@ -336,11 +352,7 @@ namespace Foregunners
 		public override void LoadContextualSource(TileNeighbors hood)
 		{
 			base.LoadContextualSource(hood);
-
-			int mapX = GetArrayXY(Position.X);
-			int mapY = GetArrayXY(Position.Y);
-			int mapZ = GetArrayZ(Position.Z);
-
+			
 			for (int z = DIVS - 1; z >= 0; z--)
 				for (int y = 0; y < DIVS; y++)
 					for (int x = 0; x < DIVS; x++)
@@ -352,10 +364,10 @@ namespace Foregunners
 							// Check to see if an X slope is by nothing north/south 
 							// or a Y slope by nothing east/west, to clone edge sprites
 							if (z > 0 && (
-								(y == 0 && Registry.Stage.GetStyle(mapX, mapY - 1, mapZ) == TileStyle.None) ||
-								(y == DIVS - 1 && Registry.Stage.GetStyle(mapX, mapY + 1, mapZ) == TileStyle.None) ||
-								(x == 0 && Registry.Stage.GetStyle(mapX - 1, mapY, mapZ) == TileStyle.None) ||
-								(x == DIVS - 1 && Registry.Stage.GetStyle(mapX + 1, mapY, mapZ) == TileStyle.None)))
+								(y == 0 && Registry.Stage.GetStyle(MapX, MapY - 1, MapZ) == TileStyle.None) ||
+								(y == DIVS - 1 && Registry.Stage.GetStyle(MapX, MapY + 1, MapZ) == TileStyle.None) ||
+								(x == 0 && Registry.Stage.GetStyle(MapX - 1, MapY, MapZ) == TileStyle.None) ||
+								(x == DIVS - 1 && Registry.Stage.GetStyle(MapX + 1, MapY, MapZ) == TileStyle.None)))
 								Sprites[x, y, z - 1] = Sprites[x, y, z];
 							
 							// Remove extra sprites above slope line 

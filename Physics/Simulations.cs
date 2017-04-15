@@ -11,48 +11,20 @@ namespace Foregunners
 {
     public abstract class SimFrame : IReal
     {
-        #region fields
-        protected bool Gravitized { private get; set; } = true;
-        public bool Active { get; protected set; } = false;
-        protected bool OnGround { get; set; }
-        protected bool OnWall { get; set; }
-
-        private float _elas { get; set; } = 0.0f;
-        protected float Elasticity
-        {
-            get { return _elas; }
-            set { _elas = MathHelper.Clamp(value, 0.0f, 1.0f); }
-        }
-
-        private float _aero { get; set; } = 0.9f;
-        public float Aero
-        {
-            get { return _aero; }
-            protected set { _aero = MathHelper.Clamp(value, 0.0f, 1.0f); }
-        }
-
-        public Vector3 Position { get; protected set; }
-        public Vector3 Velocity { get; protected set; }
-        protected Vector3 LastPos;
-		#endregion
-		
-		#region fields that should be implemented by a child class but can't rn 
-		/// <summary>
-		/// Returns a BoundingBox with Position as the center. 
-		/// </summary>
-		public BoundingBox Bounds
+		#region abstract fields for static child properties
+		private float _elas { get; set; } = 0.0f;
+		protected float Elasticity
 		{
-			get
-			{
-				Vector3 pos = new Vector3(
-					(float)Math.Floor(Position.X),
-					(float)Math.Floor(Position.Y),
-					(float)Math.Floor(Position.Z));
-				return new BoundingBox(pos - Center, pos + Center);
-			}
+			get { return _elas; }
+			set { _elas = MathHelper.Clamp(value, 0.0f, 1.0f); }
 		}
-
-		public float Facing { get; protected set; }
+		
+		private float _aero { get; set; } = 0.9f;
+		public float Aero
+		{
+			get { return _aero; }
+			protected set { _aero = MathHelper.Clamp(value, 0.0f, 1.0f); }
+		}
 
 		private int _depth;
 		public int Depth
@@ -74,18 +46,41 @@ namespace Foregunners
 		public Vector3 Center { get; private set; }
 		#endregion
 
-		#region constructors and inits
-		public SimFrame(int foot, int depth, float aero, float elasticity, bool grav = true)
-        {
-			SetDimensions(foot, depth);
-			Aero = aero;
-			Elasticity = elasticity;
-			Gravitized = grav;
+		#region fields and properties
+		protected bool Gravitized { private get; set; } = true;
+		public bool Active { get; protected set; } = false;
+		protected bool OnGround { get; set; }
+		protected bool OnWall { get; set; }
+
+		public Vector3 Position { get; protected set; }
+		public Vector3 Velocity { get; protected set; }
+		protected Vector3 LastPos;
+
+		/// <summary>
+		/// Returns a BoundingBox with Position as the center. 
+		/// </summary>
+		public BoundingBox Bounds
+		{
+			get
+			{
+				Vector3 pos = new Vector3(
+					(float)Math.Floor(Position.X),
+					(float)Math.Floor(Position.Y),
+					(float)Math.Floor(Position.Z));
+				return new BoundingBox(pos - Center, pos + Center);
+			}
 		}
 
-		public SimFrame(int foot, int depth)
-        {
+		public float Facing { get; protected set; }
+		#endregion
+
+		#region constructors and inits
+		protected SimFrame(int foot, int depth, float aero = 0.9f, float elas = 0.0f, bool grav = true)
+		{
 			SetDimensions(foot, depth);
+			Aero = aero;
+			Elasticity = elas;
+			Gravitized = grav;
 		}
 
 		private void SetDimensions(int foot, int depth)

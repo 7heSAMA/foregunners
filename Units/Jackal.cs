@@ -19,6 +19,7 @@ namespace Foregunners
 	 *	and is reduced by attacking (regardless of damage dealt). 
 	 *	Pain is increased by taking damage and reduces over time. 
 	 */
+	
 	public class Jackal : Unit
 	{
 		public static float Hunger { get; protected set; }
@@ -26,7 +27,7 @@ namespace Foregunners
 
 		public float Bloodlust { get; protected set; }
 		public float Pain { get; protected set; }
-
+		
 		public Jackal(Vector3 pos)
 			: base("Jackal", 48, 32, 0.975f, 0.1f)
 		{

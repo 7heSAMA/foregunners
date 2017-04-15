@@ -30,8 +30,8 @@ namespace Foregunners
 		public static Level Stage { get; private set; }
 		private static List<IManager> Managers;
 
+		public static Manager<Particle> PartMan;
 		public static Manager<Munition> MunMan;
-		public static ParticleManager PartMan;
 		public static Manager<Unit> UnitMan;
 
 		public static Player Avatar { get; set; }
@@ -51,11 +51,7 @@ namespace Foregunners
 		// Scripting 
 		public static Scripting.ScriptRunner Runner { get; private set; }
 		public static Random RNG { get; private set; }
-
-		/// <summary>
-		/// modify to take input pos to vary gravity? 
-		/// convert to V3 for horizontal/vertical forces? 
-		/// </summary>
+		
 		public static float Gravity
 		{ get { return -5.0f; } }
 		#endregion
@@ -77,13 +73,20 @@ namespace Foregunners
 			// Load managers 
             Managers = new List<IManager>();
 
-            PartMan = new ParticleManager();
-            UnitMan = new Manager<Unit>();
-            MunMan = new Manager<Munition>();
+            PartMan = new Manager<Particle>();
+			MunMan = new Manager<Munition>();
+			UnitMan = new Manager<Unit>();
 
             Managers.Add(PartMan);
             Managers.Add(UnitMan);
             Managers.Add(MunMan);
+
+			// Initialize 100 particles and munitions to their managers 
+			for (int i = 0; i < 100; i++)
+			{
+				PartMan.Ready(new Particle());
+				MunMan.Ready(new Munition());
+			}
 
 			Runner = new Scripting.ScriptRunner();
 
@@ -159,14 +162,12 @@ namespace Foregunners
 
 			if (Stage != null && timer > wave)
 			{
-				Console.WriteLine("Starting wave");
 				int index = 0;
 				for (int n = 0; n < count; n++)
 				{
 					Vector3 pos = Runner.Zones[index].RandomOnGround();
-					UnitMan.Add(new Beetle(pos));
+					// TODO: add a baddie 
 					index = (index + 1) % Runner.Zones.Count;
-					Console.WriteLine("Injected");
 				}
 
 				timer = 0.0f;
@@ -269,9 +270,7 @@ namespace Foregunners
             return flatPos;
         }
 
-        /// <summary>
-        /// Translate a screen position to a world position. 
-        /// </summary>
+        /// <summary> Translate a screen position to a world position. </summary>
         /// <param name="screen">XY coord with origin in top left.</param>
         /// <param name="z">The world depth we are looking at.</param>
         public static Vector3 OverlayToWorld(Point screen, float z = 0.0f)
@@ -319,13 +318,13 @@ namespace Foregunners
             }
 		}
 
-		public static Color LerpColor(Color color, Vector3 pos)
+		public static Color LerpColor(Color color, float z)
 		{
 			if (Stage != null)
-				return Color.Lerp(color, Registry.DarkPurple,
-					1.0f - pos.Z / (Stage.Depth * Tile.DEPTH));
+				return Color.Lerp(color, DarkPurple,
+					1.0f - z / (Stage.Depth * Tile.DEPTH));
 			else
-				return Color.Lerp(color, DarkPurple, 1.0f - pos.Z / (Tile.DEPTH * 4));
+				return Color.Lerp(color, DarkPurple, 1.0f - z / (Tile.DEPTH * 4));
 		}
 		#endregion
 

@@ -89,7 +89,7 @@ namespace Foregunners
 				Exit();
 			
 			if (Registry.KeyJustPressed(Keys.K))
-				Registry.LoadLevel("arena", "DemoII");
+				Registry.LoadLevel("radio", "DemoII");
 
 			Camera.Pos = new Vector2(Registry.Avatar.Position.X, Registry.Avatar.Position.Y);
 
@@ -106,7 +106,8 @@ namespace Foregunners
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Registry.DarkPurple);
+			//Color.Lerp(Registry.DarkPurple, 1.0f)
+			GraphicsDevice.Clear(Color.Lerp(Registry.DarkPurple, Color.Black, 0.7f));
             
             // Draw transformed sprites  
             Batch.Begin(

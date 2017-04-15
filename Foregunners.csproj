@@ -81,7 +81,6 @@
     <Compile Include="Physics\Manager.cs" />
     <Compile Include="Physics\Particle.cs" />
     <Compile Include="Scripting\Tooltip.cs" />
-    <Compile Include="Units\Beetle.cs" />
     <Compile Include="Units\Sprite.cs" />
     <Compile Include="Units\Unit.cs" />
     <Compile Include="Util\Gizmos.cs" />
@@ -202,6 +201,27 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Content\Maps\arena\arena5.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Content\Maps\radio\radio0.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Content\Maps\radio\radio1.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Content\Maps\radio\radio2.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Content\Maps\radio\radio3.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Content\Maps\radio\radio4.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Content\Maps\radio\radio6.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Content\Maps\radio\radio5.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <Content Include="Content\sprites1.png" />
